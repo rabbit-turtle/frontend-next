@@ -1,5 +1,5 @@
-export type TChatlog = {
+export interface IChatlog {
   id: number;
   user: string;
   message: string;
-};
+}
