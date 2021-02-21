@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 
 interface UserWebsocketResult {
   sendMessage: (message: string) => void;
@@ -6,14 +6,15 @@ interface UserWebsocketResult {
 }
 
 export const useWebsocket = (ROOM_ID: string): UserWebsocketResult => {
-  const [socket, setSocket] = useState<WebSocket>();
+  const socketRef = useRef<WebSocket>();
   const [received, setReceived] = useState<string>('');
 
   useEffect(() => {
-    const websocket = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_SERVER);
-    websocket.onopen = () => {
-      setSocket(websocket);
-      websocket.send(
+    socketRef.current = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_SERVER);
+    const { current: socket } = socketRef;
+
+    socket.onopen = () => {
+      socket.send(
         JSON.stringify({
           ROOM_ID,
           action: 'enterRoom',
@@ -21,28 +22,31 @@ export const useWebsocket = (ROOM_ID: string): UserWebsocketResult => {
       );
     };
 
-    websocket.onerror = () => {
-      console.log('websocket 연결 에러');
+    socket.onerror = () => {
+      console.log('WebSocket 연결 에러');
     };
 
-    websocket.onmessage = (e: MessageEvent) => {
+    socket.onmessage = (e: MessageEvent) => {
       setReceived(e.data);
     };
 
     return () => {
-      websocket.close();
+      socket.close();
     };
   }, []);
 
-  const sendMessage = (message: string) => {
-    socket.send(
-      JSON.stringify({
-        ROOM_ID,
-        message,
-        action: 'sendMessage',
-      }),
-    );
-  };
+  const sendMessage = useCallback(
+    (message: string) => {
+      socketRef.current.send(
+        JSON.stringify({
+          ROOM_ID,
+          message,
+          action: 'sendMessage',
+        }),
+      );
+    },
+    [socketRef.current],
+  );
 
   return { sendMessage, received };
 };
