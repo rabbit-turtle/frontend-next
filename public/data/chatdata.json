@@ -1,0 +1,29 @@
+{
+  "chats": [
+    {
+      "id": 1,
+      "user": "Kimo",
+      "message": "모모야"
+    },
+    {
+      "id": 2,
+      "user": "Kimo",
+      "message": "올때"
+    },
+    {
+      "id": 3,
+      "user": "Kimo",
+      "message": "딸라좀사오삼"
+    },
+    {
+      "id": 4,
+      "user": "Kimo",
+      "message": "돈드림"
+    },
+    {
+      "id": 5,
+      "user": "Kimo",
+      "message": "데헷!"
+    }
+  ]
+}
