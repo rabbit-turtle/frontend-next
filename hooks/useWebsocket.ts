@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 
-export const useWebsocket = (
-  ROOM_ID: string,
-  onMessage: (this: WebSocket, ev: MessageEvent<any>) => any,
-): WebSocket => {
+interface UserWebsocketResult {
+  sendMessage: (message: string) => void;
+  received: string | object;
+}
+
+export const useWebsocket = (ROOM_ID: string): UserWebsocketResult => {
   const [socket, setSocket] = useState<WebSocket>();
+  const [received, setReceived] = useState<string>('');
 
   useEffect(() => {
     const websocket = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_SERVER);
@@ -22,12 +25,24 @@ export const useWebsocket = (
       console.log('websocket 연결 에러');
     };
 
-    websocket.onmessage = onMessage;
+    websocket.onmessage = (e: MessageEvent) => {
+      setReceived(e.data);
+    };
 
     return () => {
       websocket.close();
     };
   }, []);
 
-  return socket;
+  const sendMessage = (message: string) => {
+    socket.send(
+      JSON.stringify({
+        ROOM_ID,
+        message,
+        action: 'sendMessage',
+      }),
+    );
+  };
+
+  return { sendMessage, received };
 };
