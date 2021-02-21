@@ -12,24 +12,21 @@ function Chat({ chatlogFromProps }: { chatlogFromProps: IChatlog[] }) {
   const [chatlog, setChatlog] = useState<IChatlog[]>(chatlogFromProps);
   const chatPane = useRef(null);
 
-  const mysocket = useWebsocket('test', e => {
-    console.log(e.data);
-  });
+  const { sendMessage, received } = useWebsocket('test');
 
   useEffect(() => {
     chatPane.current?.scrollBy({ behavior: 'smooth', top: 100 });
   }, [chatlog]);
 
+  useEffect(() => {
+    if (!received) return;
+    console.log('received message!', received);
+  }, [received]);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     if (!value) return;
     e.preventDefault();
-    mysocket.send(
-      JSON.stringify({
-        ROOM_ID: 'test',
-        message: value,
-        action: 'sendMessage',
-      }),
-    );
+    sendMessage(value);
     setChatlog([...chatlog, { id: Date.now(), user, message: value }]);
     setValue('');
   };
