@@ -14,6 +14,10 @@ function MyApp({ Component, pageProps }: AppProps) {
         />
         <link rel="shortcut icon" href="/favicon.png" type="image/x-icon" />
       </Head>
+      <script
+        type="text/javascript"
+        src={`https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_MAP_CLIENT_ID}`}
+      />
       <Theme>
         <Component {...pageProps} />
       </Theme>
