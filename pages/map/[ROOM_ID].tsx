@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Skeleton from 'components/skeleton';

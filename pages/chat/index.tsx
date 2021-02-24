@@ -23,7 +23,7 @@ function Chat({ chatlogFromProps }: { chatlogFromProps: IChatlog[] }) {
     console.log('received message!', received);
   }, [received]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     if (!value) return;
     e.preventDefault();
     sendMessage(value);
@@ -31,7 +31,7 @@ function Chat({ chatlogFromProps }: { chatlogFromProps: IChatlog[] }) {
     setValue('');
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>): void => {
     setValue(e.target.value);
   };
 
