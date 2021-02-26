@@ -18,6 +18,9 @@ module.exports = {
           dark: '#80cbc4',
         },
       },
+      backgroundImage: theme => ({
+        'rabbit-turtle': "url('/images/background.png')",
+      }),
     },
   },
   variants: {

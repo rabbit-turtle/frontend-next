@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import Head from 'next/head';
+import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
-import Skeleton from 'components/skeleton';
+import Map from 'components/Map';
+import NavigationBar from 'components/NavigationBar';
 import { useNavermap } from 'hooks/useNavermap';
 
 enum AnimalType {
@@ -9,8 +11,9 @@ enum AnimalType {
   turtle = 'turtle',
 }
 
-function Map() {
+function MapPage() {
   const [rabbitMarker, setRabbitMarker] = useState<any>(null);
+  const [turtleMarker, setTurtleMarker] = useState<any>(null);
   const router = useRouter();
   const { map, loading } = useNavermap();
 
@@ -38,7 +41,6 @@ function Map() {
       setRabbitMarker(_rabbitMarker);
       return;
     }
-
     rabbitMarker.setPosition(newPosition);
     console.log('움직임', position.coords.latitude, position.coords.longitude);
   };
@@ -62,23 +64,18 @@ function Map() {
       <Head>
         <title>지도</title>
       </Head>
-      <div className="flex flex-col h-screen">
-        <header className="flex justify-center items-center h-10">{router.query?.ROOM_ID}</header>
-        <div className="relative flex flex-grow">
-          <div id="map" className="flex-grow"></div>
-          {loading && <Skeleton />}
-        </div>
-      </div>
+      <NavigationBar title={`뭐 나중엔 상품이름이 들가겟지...`} />
+      <Map loading={loading} />
     </>
   );
 }
 
-export async function getServerSideProps({ query }) {
+export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { ROOM_ID } = query; // 현재 라우터 정보. ROOM_ID로부터 정보를 받아와서 props로 방 정보나,...그런걸 넘겨주도록 하면 될듯
 
   return {
     props: {},
   };
-}
+};
 
-export default Map;
+export default MapPage;

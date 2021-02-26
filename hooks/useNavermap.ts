@@ -17,7 +17,7 @@ export const useNavermap = () => {
     };
 
     navigator.geolocation.getCurrentPosition(
-      position => {
+      async position => {
         const currentLocation = new naver.maps.LatLng(
           position.coords.latitude,
           position.coords.longitude,
