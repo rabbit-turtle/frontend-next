@@ -19,7 +19,7 @@ interface ICoords {
 
 function MapPage({ result, ROOM_ID }) {
   const [currentLocation, setCurrentLocation] = useState<ICoords>();
-  const [isBothConnected, setIsBothConnected] = useState<boolean>(false);
+  const [isConnected, setIsConnected] = useState<[boolean, boolean]>([false, false]);
   const [distanceProgress, setDistanceProgress] = useState<[number, number]>([0, 100]);
   const { map, loading } = useNavermap();
   const { sendMessage, received } = useWebsocket(ROOM_ID);
@@ -48,6 +48,7 @@ function MapPage({ result, ROOM_ID }) {
   }, []);
 
   const onGeolocationSuccess = (position: GeolocationPosition) => {
+    if (!isConnected[0]) setIsConnected([true, isConnected[1]]);
     const { naver } = window as any;
     const { latitude, longitude } = position.coords;
     const newPosition = new naver.maps.LatLng(latitude, longitude);
@@ -93,9 +94,10 @@ function MapPage({ result, ROOM_ID }) {
   //상대방 좌표가 변경됐을 때
   useEffect(() => {
     if (!received || !map) return;
+    if (!isConnected[1]) setIsConnected([isConnected[0], true]);
     const { naver } = window as any;
     const { latitude, longitude } = JSON.parse(received);
-    console.log(latitude, longitude);
+    console.log('received', latitude, longitude, received);
     const newPosition = getNaverLatLng({ latitude, longitude });
     if (!turtleMarker.current) {
       const turtleMarkerOptions = getMarkerOptions(AnimalType.turtle, newPosition, map);
@@ -105,30 +107,25 @@ function MapPage({ result, ROOM_ID }) {
     turtleMarker.current.setPosition(newPosition);
   }, [received]);
 
+  //처음 둘다 연결됐을 때 지도 bound 맞춤
   useEffect(() => {
-    if (!received || !currentLocation || !map) return;
+    if (!isConnected[0] || !isConnected[1]) return;
     const { naver } = window as any;
     const { latitude, longitude } = JSON.parse(received);
     const { latitude: lat, longitude: lng } = currentLocation;
-    const distance = getDistancefromCoords(latitude, longitude, lat, lng);
 
-    const turtlePoint = getNaverLatLng({ latitude, longitude }).toPoint();
-    const rabbitPoint = getNaverLatLng({ latitude: lat, longitude: lng }).toPoint();
+    const opponentPoint = getNaverLatLng({ latitude, longitude }).toPoint();
+    const myPoint = getNaverLatLng({ latitude: lat, longitude: lng }).toPoint();
+    const { x: x1, y: y1 } = myPoint;
+    const { x: x2, y: y2 } = opponentPoint;
 
-    console.log(turtlePoint, rabbitPoint);
+    const newPointBound = new naver.maps.PointBounds(
+      new naver.maps.Point(Math.min(x1, x2), Math.min(y1, y2)),
+      new naver.maps.Point(Math.max(x1, x2), Math.max(y1, y2)),
+    );
 
-    const newPointBound = new naver.maps.PointBounds(turtlePoint, rabbitPoint);
-
-    console.log('bound', newPointBound);
-
-    map.fitBounds(newPointBound);
-
-    // const newBound = new naver.maps.LatLngBounds(
-    //   getNaverLatLng({ latitude, longitude }),
-    //   getNaverLatLng({ latitude: lat, longitude: lng }),
-    // );
-    // map.fitBounds(newBound);
-  }, [received, currentLocation, map]);
+    map!.fitBounds(newPointBound);
+  }, [isConnected]);
 
   return (
     <>
