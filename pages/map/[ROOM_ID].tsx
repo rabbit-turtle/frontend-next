@@ -124,6 +124,8 @@ function MapPage({ result, ROOM_ID }) {
       new naver.maps.Point(Math.max(x1, x2), Math.max(y1, y2)),
     );
 
+    console.log(newPointBound);
+
     map!.fitBounds(newPointBound);
   }, [isConnected]);
 
@@ -133,7 +135,7 @@ function MapPage({ result, ROOM_ID }) {
         <title>지도</title>
       </Head>
       <NavigationBar title={result.title} />
-      <Map loading={loading && !!currentLocation} />
+      <Map loading={!(!loading && isConnected[0])} />
     </>
   );
 }
