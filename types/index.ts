@@ -3,3 +3,8 @@ export interface IChatlog {
   user: string;
   message: string;
 }
+
+export interface ICoords {
+  latitude: number;
+  longitude: number;
+}

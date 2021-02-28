@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { ICoords } from 'types';
 
 interface UserWebsocketResult {
   sendMessage: (message: string) => void;
@@ -38,7 +39,7 @@ export const useWebsocket = (ROOM_ID: string): UserWebsocketResult => {
   }, []);
 
   const sendMessage = useCallback(
-    (message: string) => {
+    (message: string | ICoords) => {
       if (!isConnected) return; // 연결 되기 전에는 sendMessage 못함.
       socketRef.current.send(
         JSON.stringify({
