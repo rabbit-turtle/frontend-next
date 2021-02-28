@@ -16,7 +16,12 @@ function MyApp({ Component, pageProps }: AppProps) {
           <link rel="shortcut icon" href="/favicon.png" type="image/x-icon" />
           <script
             type="text/javascript"
-            src={`https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_MAP_CLIENT_ID}&submodules=geocoder`}
+            src={`https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_MAP_CLIENT_ID}`}
+          ></script>
+          <script
+            defer
+            type="text/javascript"
+            src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}`}
           ></script>
         </Head>
         <Theme>

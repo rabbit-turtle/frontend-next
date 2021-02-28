@@ -2,18 +2,20 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 
 interface UserWebsocketResult {
   sendMessage: (message: string) => void;
-  received: string | object;
+  received: string;
 }
 
 export const useWebsocket = (ROOM_ID: string): UserWebsocketResult => {
   const socketRef = useRef<WebSocket>();
   const [received, setReceived] = useState<string>('');
+  const [isConnected, setIsConnected] = useState<boolean>(false);
 
   useEffect(() => {
     socketRef.current = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_SERVER);
     const { current: socket } = socketRef;
 
     socket.onopen = () => {
+      setIsConnected(true);
       socket.send(
         JSON.stringify({
           ROOM_ID,
@@ -37,6 +39,7 @@ export const useWebsocket = (ROOM_ID: string): UserWebsocketResult => {
 
   const sendMessage = useCallback(
     (message: string) => {
+      if (!isConnected) return; // 연결 되기 전에는 sendMessage 못함.
       socketRef.current.send(
         JSON.stringify({
           ROOM_ID,
@@ -45,7 +48,7 @@ export const useWebsocket = (ROOM_ID: string): UserWebsocketResult => {
         }),
       );
     },
-    [socketRef.current],
+    [socketRef.current, isConnected],
   );
 
   return { sendMessage, received };
