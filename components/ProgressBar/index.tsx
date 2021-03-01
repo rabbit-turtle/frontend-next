@@ -5,16 +5,12 @@ import Slider from '@material-ui/core/Slider';
 
 interface IProgressBar {
   type: string;
+  value: [number, number];
 }
 
-function ProgressBar({ type }: IProgressBar) {
+function ProgressBar({ type, value }: IProgressBar) {
   const PrettoSlider = withStyles({
-    // root: {
-    //   // color: 'primary',
-    //   // height: 8,
-    // },
     disabled: {
-      // color: '#ffcdd2',
       '& .MuiSlider-thumb': {
         width: 24,
         height: 24,
@@ -22,9 +18,11 @@ function ProgressBar({ type }: IProgressBar) {
         border: '2px solid #ffcdd2',
         marginTop: -8,
         marginLeft: -12,
+        color: '#ffcdd2',
       },
       '& + .MuiSlider-thumb': {
         border: '2px solid #b2dfdb',
+        color: '#b2dfdb',
       },
       '& .MuiSlider-rail': {
         height: 8,
@@ -36,12 +34,15 @@ function ProgressBar({ type }: IProgressBar) {
         height: 8,
         borderRadius: 4,
       },
+      '& .MuiSlider-valueLabel': {
+        marginLeft: 8,
+      },
     },
   })(Slider);
 
   return (
-    <div>
-      <PrettoSlider defaultValue={[20, 60]} disabled />
+    <div className="sticky bottom-0 bg-white">
+      <PrettoSlider value={value} disabled valueLabelDisplay="on" />
     </div>
   );
 }

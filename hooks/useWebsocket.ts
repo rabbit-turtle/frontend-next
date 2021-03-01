@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { ICoords } from 'types';
 
 interface UserWebsocketResult {
-  sendMessage: (message: string) => void;
+  sendMessage: (message: string | ICoords) => void;
   received: string;
 }
 

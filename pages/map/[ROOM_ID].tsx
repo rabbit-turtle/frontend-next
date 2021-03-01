@@ -35,6 +35,18 @@ function MapPage({ result, ROOM_ID }) {
     };
   }, []);
 
+  const getDistanceProgress = (type: string, lat: number, lng: number) => {
+    const distance = getDistancefromCoords(lat, lng, result.lat, result.lng);
+    console.log(type, distance);
+    if (type === 'rabbit') {
+      const converted = Math.floor((1 - distance) * 50);
+      setDistanceProgress([converted, distanceProgress[1]]);
+      return;
+    }
+    const converted = Math.floor((1 + distance) * 50);
+    setDistanceProgress([distanceProgress[0], converted]);
+  };
+
   const getNaverLatLng = ({ latitude, longitude }: ICoords) => {
     const { naver } = window as any;
     return new naver.maps.LatLng(latitude, longitude);
@@ -50,7 +62,10 @@ function MapPage({ result, ROOM_ID }) {
     const newPosition = new naver.maps.LatLng(latitude, longitude);
 
     setCurrentLocation({ latitude, longitude });
+
     sendMessage({ latitude, longitude });
+
+    getDistanceProgress(AnimalType.rabbit, latitude, longitude);
 
     if (!rabbitMarker.current) {
       console.log('rabbit marker 없음', rabbitMarker.current);
@@ -93,6 +108,9 @@ function MapPage({ result, ROOM_ID }) {
     const { naver } = window as any;
     const { latitude, longitude } = JSON.parse(received);
     console.log('received', latitude, longitude, received);
+
+    getDistanceProgress(AnimalType.turtle, latitude, longitude);
+
     const newPosition = getNaverLatLng({ latitude, longitude });
     if (!turtleMarker.current) {
       const turtleMarkerOptions = getMarkerOptions(AnimalType.turtle, newPosition, map);
@@ -121,18 +139,17 @@ function MapPage({ result, ROOM_ID }) {
 
     console.log(newPointBound);
     setIsBothConnected(true);
-
     map.fitBounds(newPointBound);
   }, [currentLocation, received, isBothConnected]);
 
   return (
-    <div className="flex flex-col justify-between">
+    <div className="relative flex flex-col justify-between">
       <Head>
         <title>지도</title>
       </Head>
       <NavigationBar title={result.title} />
-      <ProgressBar type="date" />
       <Map loading={loading} />
+      {currentLocation && received && <ProgressBar type="date" value={distanceProgress} />}
     </div>
   );
 }
