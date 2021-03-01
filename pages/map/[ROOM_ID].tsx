@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { GetServerSideProps } from 'next';
 import Map from 'components/Map';
 import NavigationBar from 'components/NavigationBar';
+import ProgressBar from 'components/ProgressBar';
 import { useNavermap } from 'hooks/useNavermap';
 import { useWebsocket } from 'hooks/useWebsocket';
 import { getDistancefromCoords } from 'utils/distance';
@@ -125,13 +126,14 @@ function MapPage({ result, ROOM_ID }) {
   }, [currentLocation, received, isBothConnected]);
 
   return (
-    <>
+    <div className="flex flex-col justify-between">
       <Head>
         <title>지도</title>
       </Head>
       <NavigationBar title={result.title} />
+      <ProgressBar type="date" />
       <Map loading={loading} />
-    </>
+    </div>
   );
 }
 

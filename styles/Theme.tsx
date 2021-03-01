@@ -1,5 +1,4 @@
-import React from 'react';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import { createMuiTheme } from '@material-ui/core/styles';
 import red from '@material-ui/core/colors/red';
 import teal from '@material-ui/core/colors/teal';
 
@@ -20,8 +19,4 @@ const theme = createMuiTheme({
   },
 });
 
-function Theme({ children }: { children: React.ReactNode }) {
-  return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
-}
-
-export default Theme;
+export default theme;

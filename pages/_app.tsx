@@ -1,10 +1,20 @@
+import { useEffect } from 'react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
+import { ThemeProvider } from '@material-ui/core/styles';
+import CssBaseline from '@material-ui/core/CssBaseline';
 import Template from 'components/template';
-import Theme from 'styles/Theme';
+import theme from 'styles/Theme';
 import 'styles/tailwind.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
+  useEffect(() => {
+    const jssStyles = document.querySelector('#jss-server-side');
+    if (jssStyles) {
+      jssStyles.parentElement.removeChild(jssStyles);
+    }
+  }, []);
+
   return (
     <>
       <Template>
@@ -24,9 +34,10 @@ function MyApp({ Component, pageProps }: AppProps) {
             src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}`}
           ></script>
         </Head>
-        <Theme>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
           <Component {...pageProps} />
-        </Theme>
+        </ThemeProvider>
       </Template>
     </>
   );
