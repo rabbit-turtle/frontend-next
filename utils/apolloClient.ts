@@ -7,7 +7,7 @@ const createApolloClient = () => {
   return new ApolloClient({
     ssrMode: typeof window === 'undefined',
     link: new HttpLink({
-      uri: '우리의 엔드포인트',
+      uri: 'http://10.95.5.120:8000/graphql',
     }),
     cache: new InMemoryCache(),
   });

@@ -6,8 +6,8 @@ interface IMap {
 
 function Map({ loading }: IMap) {
   return (
-    <div className="relative flex flex-col flex-grow h-screen">
-      <div id="map" className="flex-grow"></div>
+    <div className="relative flex flex-col flex-grow">
+      <div id="map" className="flex-grow z-0"></div>
       {loading && <Skeleton />}
     </div>
   );

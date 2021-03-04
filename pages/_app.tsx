@@ -1,13 +1,17 @@
 import { useEffect } from 'react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
+import { ApolloProvider } from '@apollo/client';
 import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Template from 'components/template';
-import theme from 'styles/Theme';
+import theme from 'styles/theme';
+import { useApollo } from 'utils/apolloClient';
 import 'styles/tailwind.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const apolloClient = useApollo(pageProps.initialApolloState);
+
   useEffect(() => {
     const jssStyles = document.querySelector('#jss-server-side');
     if (jssStyles) {
@@ -19,6 +23,11 @@ function MyApp({ Component, pageProps }: AppProps) {
     <>
       <Template>
         <Head>
+          <script src="https://apis.google.com/js/platform.js" async defer></script>
+          <meta
+            name="google-signin-client_id"
+            content={`${process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}`}
+          />
           <link
             rel="stylesheet"
             href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
@@ -34,10 +43,12 @@ function MyApp({ Component, pageProps }: AppProps) {
             src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}`}
           ></script>
         </Head>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <Component {...pageProps} />
-        </ThemeProvider>
+        <ApolloProvider client={apolloClient}>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <Component {...pageProps} />
+          </ThemeProvider>
+        </ApolloProvider>
       </Template>
     </>
   );

@@ -1,10 +1,3 @@
-interface IgetDistancefromCoords {
-  lat1: number;
-  lat2: number;
-  lng1: number;
-  lng2: number;
-}
-
 const degToRad = (degree: number): number => {
   return degree * (Math.PI / 180);
 };

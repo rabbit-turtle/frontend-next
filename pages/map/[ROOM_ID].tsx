@@ -18,6 +18,7 @@ function MapPage({ result, ROOM_ID }) {
   const [currentLocation, setCurrentLocation] = useState<ICoords>();
   const [isBothConnected, setIsBothConnected] = useState<boolean>(false);
   const [distanceProgress, setDistanceProgress] = useState<[number, number]>([0, 100]);
+  const [minuteLeft, setMinuteLeft] = useState<number>(result.minuteLeft);
   const { map, loading } = useNavermap();
   const { sendMessage, received } = useWebsocket(ROOM_ID);
   const rabbitMarker = useRef(null);
@@ -37,14 +38,15 @@ function MapPage({ result, ROOM_ID }) {
 
   const getDistanceProgress = (type: string, lat: number, lng: number) => {
     const distance = getDistancefromCoords(lat, lng, result.lat, result.lng);
+    const _distance = distance > 1 ? 1 : distance;
     console.log(type, distance);
     if (type === 'rabbit') {
-      const converted = Math.floor((1 - distance) * 50);
-      setDistanceProgress([converted, distanceProgress[1]]);
+      const converted = Math.floor((1 - _distance) * 50);
+      setDistanceProgress(prev => [converted, prev[1]]);
       return;
     }
-    const converted = Math.floor((1 + distance) * 50);
-    setDistanceProgress([distanceProgress[0], converted]);
+    const converted = Math.floor((1 + _distance) * 50);
+    setDistanceProgress(prev => [prev[0], converted]);
   };
 
   const getNaverLatLng = ({ latitude, longitude }: ICoords) => {
@@ -68,7 +70,6 @@ function MapPage({ result, ROOM_ID }) {
     getDistanceProgress(AnimalType.rabbit, latitude, longitude);
 
     if (!rabbitMarker.current) {
-      console.log('rabbit marker 없음', rabbitMarker.current);
       const rabbitMarkerOptions = getMarkerOptions(AnimalType.rabbit, newPosition, map);
       const _rabbitMarker = new naver.maps.Marker(rabbitMarkerOptions);
       rabbitMarker.current = _rabbitMarker;
@@ -77,6 +78,14 @@ function MapPage({ result, ROOM_ID }) {
     rabbitMarker.current.setPosition(newPosition);
     console.log('움직임', latitude, longitude);
   };
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setMinuteLeft(min => min - 1);
+    }, 60000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     if (!map) return;
@@ -105,19 +114,24 @@ function MapPage({ result, ROOM_ID }) {
   //상대방 좌표가 변경됐을 때
   useEffect(() => {
     if (!received || !map) return;
-    const { naver } = window as any;
-    const { latitude, longitude } = JSON.parse(received);
-    console.log('received', latitude, longitude, received);
+    try {
+      const { naver } = window as any;
+      const { latitude, longitude } = JSON.parse(received);
+      console.log('received', latitude, longitude, received);
 
-    getDistanceProgress(AnimalType.turtle, latitude, longitude);
+      getDistanceProgress(AnimalType.turtle, latitude, longitude);
 
-    const newPosition = getNaverLatLng({ latitude, longitude });
-    if (!turtleMarker.current) {
-      const turtleMarkerOptions = getMarkerOptions(AnimalType.turtle, newPosition, map);
-      turtleMarker.current = new naver.maps.Marker(turtleMarkerOptions);
+      const newPosition = getNaverLatLng({ latitude, longitude });
+      if (!turtleMarker.current) {
+        const turtleMarkerOptions = getMarkerOptions(AnimalType.turtle, newPosition, map);
+        turtleMarker.current = new naver.maps.Marker(turtleMarkerOptions);
+        return;
+      }
+      turtleMarker.current.setPosition(newPosition);
+    } catch (error) {
+      // 받은 데이터가 JSON이 아닌 경우
       return;
     }
-    turtleMarker.current.setPosition(newPosition);
   }, [received]);
 
   //처음 둘다 연결됐을 때 지도 bound 맞춤
@@ -143,13 +157,25 @@ function MapPage({ result, ROOM_ID }) {
   }, [currentLocation, received, isBothConnected]);
 
   return (
-    <div className="relative flex flex-col justify-between">
+    <div className="relative flex flex-col justify-between h-screen">
       <Head>
         <title>지도</title>
       </Head>
       <NavigationBar title={result.title} />
+      {/* {
+        minuteLeft < 180 ? (
+          <>
+          <ProgressBar type="time" value={90} />
+          <Map loading={loading} />
+          {currentLocation && received && <ProgressBar type="distance" value={distanceProgress} />}
+          </>
+        ) : (
+          // 너무 오래 남았다는 내용의 컴포넌트
+        )
+      } */}
+      <ProgressBar type="time" value={minuteLeft} />
       <Map loading={loading} />
-      {currentLocation && received && <ProgressBar type="date" value={distanceProgress} />}
+      {currentLocation && received && <ProgressBar type="distance" value={distanceProgress} />}
     </div>
   );
 }
@@ -157,13 +183,16 @@ function MapPage({ result, ROOM_ID }) {
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { ROOM_ID } = query; // 현재 라우터 정보. ROOM_ID로부터 정보를 받아와서 props로 방 정보나,...그런걸 넘겨주도록 하면 될듯
 
+  const dif = Math.floor((new Date('2021-03-21 15:00:00').valueOf() - Date.now()) / 1000 / 60);
+
+  //
   return {
     props: {
       result: {
         lat: 37.3662778,
         lng: 127.1081222,
-        title: '나도 아이패드 에어가 갖고싶따',
-        date: new Date().toString(),
+        title: '아이패드 에어',
+        minuteLeft: dif,
       },
       ROOM_ID,
     },
