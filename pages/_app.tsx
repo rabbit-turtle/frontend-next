@@ -24,10 +24,6 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Template>
         <Head>
           <script src="https://apis.google.com/js/platform.js" async defer></script>
-          <meta
-            name="google-signin-client_id"
-            content={`${process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}`}
-          />
           <link
             rel="stylesheet"
             href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
