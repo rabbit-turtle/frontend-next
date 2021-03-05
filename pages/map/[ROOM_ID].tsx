@@ -1,12 +1,11 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import Head from 'next/head';
+import dynamic from 'next/dynamic';
 import { GetServerSideProps } from 'next';
-import Map from 'components/Map';
-import NavigationBar from 'components/NavigationBar';
 import { useNavermap } from 'hooks/useNavermap';
 import { useWebsocket } from 'hooks/useWebsocket';
 import { getDistancefromCoords } from 'utils/distance';
 import { ICoords } from 'types';
+const Map = dynamic(() => import('components/Map'));
 
 enum AnimalType {
   rabbit = 'rabbit',
@@ -17,6 +16,7 @@ function MapPage({ result, ROOM_ID }) {
   const [currentLocation, setCurrentLocation] = useState<ICoords>();
   const [isBothConnected, setIsBothConnected] = useState<boolean>(false);
   const [distanceProgress, setDistanceProgress] = useState<[number, number]>([0, 100]);
+  const [minuteLeft, setMinuteLeft] = useState<number>(result.minuteLeft);
   const { map, loading } = useNavermap();
   const { sendMessage, received } = useWebsocket(ROOM_ID);
   const rabbitMarker = useRef(null);
@@ -34,6 +34,19 @@ function MapPage({ result, ROOM_ID }) {
     };
   }, []);
 
+  const getDistanceProgress = (type: string, lat: number, lng: number) => {
+    const distance = getDistancefromCoords(lat, lng, result.lat, result.lng);
+    const _distance = distance > 1 ? 1 : distance;
+    console.log(type, distance);
+    if (type === 'rabbit') {
+      const converted = Math.floor((1 - _distance) * 50);
+      setDistanceProgress(prev => [converted, prev[1]]);
+      return;
+    }
+    const converted = Math.floor((1 + _distance) * 50);
+    setDistanceProgress(prev => [prev[0], converted]);
+  };
+
   const getNaverLatLng = ({ latitude, longitude }: ICoords) => {
     const { naver } = window as any;
     return new naver.maps.LatLng(latitude, longitude);
@@ -49,10 +62,12 @@ function MapPage({ result, ROOM_ID }) {
     const newPosition = new naver.maps.LatLng(latitude, longitude);
 
     setCurrentLocation({ latitude, longitude });
+
     sendMessage({ latitude, longitude });
 
+    getDistanceProgress(AnimalType.rabbit, latitude, longitude);
+
     if (!rabbitMarker.current) {
-      console.log('rabbit marker 없음', rabbitMarker.current);
       const rabbitMarkerOptions = getMarkerOptions(AnimalType.rabbit, newPosition, map);
       const _rabbitMarker = new naver.maps.Marker(rabbitMarkerOptions);
       rabbitMarker.current = _rabbitMarker;
@@ -61,6 +76,14 @@ function MapPage({ result, ROOM_ID }) {
     rabbitMarker.current.setPosition(newPosition);
     console.log('움직임', latitude, longitude);
   };
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setMinuteLeft(min => min - 1);
+    }, 60000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     if (!map) return;
@@ -89,9 +112,14 @@ function MapPage({ result, ROOM_ID }) {
   //상대방 좌표가 변경됐을 때
   useEffect(() => {
     if (!received || !map) return;
+    const { message, messageType } = JSON.parse(received);
+    if (messageType !== 'location') return;
     const { naver } = window as any;
-    const { latitude, longitude } = JSON.parse(received);
-    console.log('received', latitude, longitude, received);
+    const { latitude, longitude } = message;
+    console.log('received', latitude, longitude);
+
+    getDistanceProgress(AnimalType.turtle, latitude, longitude);
+
     const newPosition = getNaverLatLng({ latitude, longitude });
     if (!turtleMarker.current) {
       const turtleMarkerOptions = getMarkerOptions(AnimalType.turtle, newPosition, map);
@@ -120,31 +148,34 @@ function MapPage({ result, ROOM_ID }) {
 
     console.log(newPointBound);
     setIsBothConnected(true);
-
     map.fitBounds(newPointBound);
   }, [currentLocation, received, isBothConnected]);
 
   return (
-    <>
-      <Head>
-        <title>지도</title>
-      </Head>
-      <NavigationBar title={result.title} />
-      <Map loading={loading} />
-    </>
+    <Map
+      loading={loading}
+      title={result.title}
+      minuteLeft={minuteLeft}
+      currentLocation={currentLocation}
+      received={received}
+      distanceProgress={distanceProgress}
+    />
   );
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { ROOM_ID } = query; // 현재 라우터 정보. ROOM_ID로부터 정보를 받아와서 props로 방 정보나,...그런걸 넘겨주도록 하면 될듯
 
+  const dif = Math.floor((new Date('2021-03-21 15:00:00').valueOf() - Date.now()) / 1000 / 60);
+
+  //
   return {
     props: {
       result: {
         lat: 37.3662778,
         lng: 127.1081222,
-        title: '나도 아이패드 에어가 갖고싶따',
-        date: new Date().toString(),
+        title: '아이패드 에어',
+        minuteLeft: dif,
       },
       ROOM_ID,
     },

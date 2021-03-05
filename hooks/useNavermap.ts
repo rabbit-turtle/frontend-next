@@ -26,6 +26,7 @@ export const useNavermap = () => {
         const _map = new naver.maps.Map('map', {
           center: currentLocation,
           zoom: 16,
+          logoControl: false,
         });
 
         setMap(_map);

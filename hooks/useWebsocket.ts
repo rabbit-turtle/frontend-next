@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { ICoords } from 'types';
+import { SOCKET_MESSAGE_TYPE } from 'constants/index';
 
 interface UserWebsocketResult {
-  sendMessage: (message: string) => void;
+  sendMessage: (message: string | ICoords) => void;
   received: string;
 }
 
@@ -46,6 +47,8 @@ export const useWebsocket = (ROOM_ID: string): UserWebsocketResult => {
           ROOM_ID,
           message,
           action: 'sendMessage',
+          messageType:
+            typeof message === 'string' ? SOCKET_MESSAGE_TYPE.chat : SOCKET_MESSAGE_TYPE.map,
         }),
       );
     },
