@@ -52,6 +52,29 @@ function MapPage({ result, ROOM_ID }) {
     return new naver.maps.LatLng(latitude, longitude);
   };
 
+  const fitBoundsMap = (_map: any, ...naverpoints: any[]) => {
+    const { naver } = window as any;
+    const destPoint = getNaverLatLng({ latitude: result.lat, longitude: result.lng }).toPoint();
+    let minx = 999,
+      miny = 999,
+      maxx = 0,
+      maxy = 0;
+
+    [...naverpoints, destPoint].forEach((point: { x: number; y: number }) => {
+      minx = point.x < minx ? point.x : minx;
+      miny = point.y < miny ? point.y : miny;
+      maxx = point.x > maxx ? point.x : maxx;
+      maxy = point.y > maxy ? point.y : maxy;
+    });
+
+    const newPointBound = new naver.maps.PointBounds(
+      new naver.maps.Point(minx, miny),
+      new naver.maps.Point(maxx, maxy),
+    );
+
+    _map.fitBounds(newPointBound);
+  };
+
   const onGeolocationError = useCallback((error: GeolocationPositionError) => {
     console.log(`Error(${error.code}) : ${error.message}`);
   }, []);
@@ -68,6 +91,7 @@ function MapPage({ result, ROOM_ID }) {
     getDistanceProgress(AnimalType.rabbit, latitude, longitude);
 
     if (!rabbitMarker.current) {
+      fitBoundsMap(map, newPosition.toPoint());
       const rabbitMarkerOptions = getMarkerOptions(AnimalType.rabbit, newPosition, map);
       const _rabbitMarker = new naver.maps.Marker(rabbitMarkerOptions);
       rabbitMarker.current = _rabbitMarker;
@@ -111,7 +135,7 @@ function MapPage({ result, ROOM_ID }) {
 
   //상대방 좌표가 변경됐을 때
   useEffect(() => {
-    if (!received || !map) return;
+    if (!received || !map || minuteLeft > 60) return;
     const { message, messageType } = JSON.parse(received);
     if (messageType !== 'location') return;
     const { naver } = window as any;
@@ -127,28 +151,19 @@ function MapPage({ result, ROOM_ID }) {
       return;
     }
     turtleMarker.current.setPosition(newPosition);
-  }, [received]);
+  }, [received, minuteLeft]);
 
   //처음 둘다 연결됐을 때 지도 bound 맞춤
   useEffect(() => {
-    if (isBothConnected || !currentLocation || !received) return;
-    const { naver } = window as any;
+    if (isBothConnected || !currentLocation || !received || !map) return;
     const { latitude, longitude } = JSON.parse(received);
     const { latitude: lat, longitude: lng } = currentLocation;
 
     const opponentPoint = getNaverLatLng({ latitude, longitude }).toPoint();
     const myPoint = getNaverLatLng({ latitude: lat, longitude: lng }).toPoint();
-    const { x: x1, y: y1 } = myPoint;
-    const { x: x2, y: y2 } = opponentPoint;
 
-    const newPointBound = new naver.maps.PointBounds(
-      new naver.maps.Point(Math.min(x1, x2), Math.min(y1, y2)),
-      new naver.maps.Point(Math.max(x1, x2), Math.max(y1, y2)),
-    );
-
-    console.log(newPointBound);
+    fitBoundsMap(map, myPoint, opponentPoint);
     setIsBothConnected(true);
-    map.fitBounds(newPointBound);
   }, [currentLocation, received, isBothConnected]);
 
   return (
@@ -166,7 +181,7 @@ function MapPage({ result, ROOM_ID }) {
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { ROOM_ID } = query; // 현재 라우터 정보. ROOM_ID로부터 정보를 받아와서 props로 방 정보나,...그런걸 넘겨주도록 하면 될듯
 
-  const dif = Math.floor((new Date('2021-03-21 15:00:00').valueOf() - Date.now()) / 1000 / 60);
+  const dif = Math.floor((new Date('2021-03-07 18:00:00').valueOf() - Date.now()) / 1000 / 60);
 
   //
   return {
