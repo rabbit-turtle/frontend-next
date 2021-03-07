@@ -1,10 +1,11 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { GetServerSideProps } from 'next';
+import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import { useNavermap } from 'hooks/useNavermap';
 import { useWebsocket } from 'hooks/useWebsocket';
 import { getDistancefromCoords } from 'utils/distance';
 import { ICoords } from 'types';
+import { useRouter } from 'next/router';
 const Map = dynamic(() => import('components/Map'));
 
 enum AnimalType {
@@ -12,15 +13,23 @@ enum AnimalType {
   turtle = 'turtle',
 }
 
-function MapPage({ result, ROOM_ID }) {
+function MapPage({ result }) {
   const [currentLocation, setCurrentLocation] = useState<ICoords>();
   const [isBothConnected, setIsBothConnected] = useState<boolean>(false);
   const [distanceProgress, setDistanceProgress] = useState<[number, number]>([0, 100]);
   const [minuteLeft, setMinuteLeft] = useState<number>(result.minuteLeft);
   const { map, loading } = useNavermap();
-  const { sendMessage, received } = useWebsocket(ROOM_ID);
+  const router = useRouter();
+  const { ROOM_ID } = router.query;
+  const { enterRoom, sendMessage, isConnected, received } = useWebsocket();
   const rabbitMarker = useRef(null);
   const turtleMarker = useRef(null);
+
+  useEffect(() => {
+    if (!ROOM_ID || !isConnected) return;
+
+    enterRoom(ROOM_ID as string);
+  }, [ROOM_ID, isConnected]);
 
   const getMarkerOptions = useCallback((type: string, position: any, _map = map) => {
     const { naver } = window as any;
@@ -29,6 +38,7 @@ function MapPage({ result, ROOM_ID }) {
       map: _map,
       icon: {
         url: `/images/${type}.png`,
+        scaledSize: naver.maps.Size(50, 30),
       },
       animation: naver.maps.Animation.BOUNCE,
     };
@@ -86,7 +96,7 @@ function MapPage({ result, ROOM_ID }) {
 
     setCurrentLocation({ latitude, longitude });
 
-    sendMessage({ latitude, longitude });
+    sendMessage(ROOM_ID as string, { latitude, longitude });
 
     getDistanceProgress(AnimalType.rabbit, latitude, longitude);
 
@@ -110,7 +120,7 @@ function MapPage({ result, ROOM_ID }) {
   }, []);
 
   useEffect(() => {
-    if (!map) return;
+    if (!map || !isConnected) return;
     const optionObj = {
       maximumAge: 30000,
       timeout: 27000,
@@ -131,7 +141,7 @@ function MapPage({ result, ROOM_ID }) {
     });
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [map]);
+  }, [map, isConnected]);
 
   //상대방 좌표가 변경됐을 때
   useEffect(() => {
@@ -178,10 +188,10 @@ function MapPage({ result, ROOM_ID }) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const { ROOM_ID } = query; // 현재 라우터 정보. ROOM_ID로부터 정보를 받아와서 props로 방 정보나,...그런걸 넘겨주도록 하면 될듯
-
-  const dif = Math.floor((new Date('2021-03-07 18:00:00').valueOf() - Date.now()) / 1000 / 60);
+export const getServerSideProps: GetServerSideProps = async ({
+  query,
+}: GetServerSidePropsContext) => {
+  const dif = Math.floor((new Date('2021-03-21 15:00:00').valueOf() - Date.now()) / 1000 / 60);
 
   //
   return {
@@ -192,7 +202,6 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
         title: '아이패드 에어',
         minuteLeft: dif,
       },
-      ROOM_ID,
     },
   };
 };

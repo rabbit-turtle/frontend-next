@@ -3,11 +3,13 @@ import { ICoords } from 'types';
 import { SOCKET_MESSAGE_TYPE } from 'constants/index';
 
 interface UserWebsocketResult {
-  sendMessage: (message: string | ICoords) => void;
+  enterRoom: (ROOM_ID: string) => void;
+  sendMessage: (ROOM_ID: string, message: string | ICoords) => void;
+  isConnected: boolean;
   received: string;
 }
 
-export const useWebsocket = (ROOM_ID: string): UserWebsocketResult => {
+export const useWebsocket = (): UserWebsocketResult => {
   const socketRef = useRef<WebSocket>();
   const [received, setReceived] = useState<string>('');
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -18,12 +20,6 @@ export const useWebsocket = (ROOM_ID: string): UserWebsocketResult => {
 
     socket.onopen = () => {
       setIsConnected(true);
-      socket.send(
-        JSON.stringify({
-          ROOM_ID,
-          action: 'enterRoom',
-        }),
-      );
     };
 
     socket.onerror = () => {
@@ -39,9 +35,24 @@ export const useWebsocket = (ROOM_ID: string): UserWebsocketResult => {
     };
   }, []);
 
+  const enterRoom = useCallback(
+    (ROOM_ID: string) => {
+      if (!isConnected) return;
+
+      socketRef.current.send(
+        JSON.stringify({
+          ROOM_ID,
+          action: 'enterRoom',
+        }),
+      );
+    },
+    [socketRef.current, isConnected],
+  );
+
   const sendMessage = useCallback(
-    (message: string | ICoords) => {
+    (ROOM_ID: string, message: string | ICoords) => {
       if (!isConnected) return; // 연결 되기 전에는 sendMessage 못함.
+
       socketRef.current.send(
         JSON.stringify({
           ROOM_ID,
@@ -55,5 +66,5 @@ export const useWebsocket = (ROOM_ID: string): UserWebsocketResult => {
     [socketRef.current, isConnected],
   );
 
-  return { sendMessage, received };
+  return { enterRoom, sendMessage, isConnected, received };
 };
