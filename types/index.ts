@@ -1,7 +1,8 @@
 export interface IChatlog {
-  id: number;
-  user: string;
-  message: string;
+  id?: string;
+  content: string;
+  isSender: boolean;
+  created_at: string;
 }
 
 export interface ICoords {

@@ -9,7 +9,10 @@ import { useMutation, gql } from '@apollo/client';
 
 const CREATE_ROOM = gql`
   mutation CreateRoom($createRoomData: CreateRoomInput!) {
-    createRoom(createRoomData: $createRoomData)
+    createRoom(createRoomData: $createRoomData) {
+      id
+      title
+    }
   }
 `;
 
@@ -28,7 +31,7 @@ function CreateRoomModal() {
     setInputData({ ...inputData, [name]: value });
   };
 
-  const handleSubmit = (e: MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
     const { title, reserved_time } = inputData;
     createRoom({
@@ -40,7 +43,6 @@ function CreateRoomModal() {
         },
       },
     });
-    console.log({ title, reserved_time, location });
   };
 
   useEffect(() => {
@@ -64,9 +66,6 @@ function CreateRoomModal() {
     naver.maps.Event.addListener(map, 'click', handleMapClick);
   }, [map]);
 
-  console.log(inputData);
-  console.log('data', data);
-  if (error) return <div>{error}</div>;
   return (
     <div className="h-screen bg-lightgray z-20">
       <form

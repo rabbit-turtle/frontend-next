@@ -21,6 +21,21 @@ module.exports = {
       borderRadius: {
         50: '50%',
       },
+      keyframes: {
+        run: {
+          '0%': {
+            right: '-20px',
+            bottom: '-7px',
+          },
+          '100%': {
+            right: '100%',
+            bottom: '-7px',
+          },
+        },
+      },
+      animation: {
+        running: 'run 30s ease-in-out infinite, bounce 1s ease-in-out infinite',
+      },
       backgroundImage: theme => ({
         'rabbit-turtle': "url('/images/background.png')",
       }),

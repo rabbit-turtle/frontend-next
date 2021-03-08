@@ -17,13 +17,12 @@ const authLink = setContext((_, { headers }) => {
   return {
     headers: {
       ...headers,
-      token: token ? token : '',
+      Authorization: token ? `Bearer ${token}` : '',
     },
   };
 });
 
 const createApolloClient = () => {
-  console.log('created');
   return new ApolloClient({
     ssrMode: typeof window === 'undefined',
     link: authLink.concat(
