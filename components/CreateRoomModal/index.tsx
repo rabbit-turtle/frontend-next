@@ -1,32 +1,31 @@
-import { ChangeEvent, MouseEvent, useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, SetStateAction } from 'react';
+import { useMutation } from '@apollo/client';
 import Button from '@material-ui/core/Button';
 import Input from '@material-ui/core/Input';
 import Typography from '@material-ui/core/Typography';
 import Skeleton from 'components/Skeleton';
 import { useNavermap } from 'hooks/useNavermap';
 import { ICoords } from 'types';
-import { useMutation, gql } from '@apollo/client';
+import { CREATE_ROOM } from '_graphql/mutations';
 
-const CREATE_ROOM = gql`
-  mutation CreateRoom($createRoomData: CreateRoomInput!) {
-    createRoom(createRoomData: $createRoomData) {
-      id
-      title
-    }
-  }
-`;
+interface ICreateRoomModal {
+  setIsCreateModalOn: React.Dispatch<SetStateAction<boolean>>;
+}
 
-function CreateRoomModal() {
+function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
   const { map, loading } = useNavermap();
   const [location, setLocation] = useState<ICoords>();
   const [inputData, setInputData] = useState({
     title: '',
-    reserved_time: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString(),
+    reserved_time: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 16),
   });
+  const modalRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef(null);
   const [createRoom, { data, error }] = useMutation(CREATE_ROOM);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setInputData({ ...inputData, [name]: value });
   };
@@ -43,6 +42,12 @@ function CreateRoomModal() {
         },
       },
     });
+  };
+
+  const handleModalClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (e.target === modalRef.current) {
+      setIsCreateModalOn(false);
+    }
   };
 
   useEffect(() => {
@@ -67,7 +72,7 @@ function CreateRoomModal() {
   }, [map]);
 
   return (
-    <div className="h-screen bg-lightgray z-20">
+    <div className="h-screen bg-black-op-3 z-20" ref={modalRef} onClick={handleModalClick}>
       <form
         className="fixed left-10 right-10 top-10 bottom-10 my-auto  flex flex-col justify-center items-center p-8 bg-white rounded-3xl shadow-2xl"
         onSubmit={handleSubmit}
@@ -75,7 +80,7 @@ function CreateRoomModal() {
         <Typography variant="h6">새로운 거래</Typography>
         <div className="flex flex-col justify-between w-full h-28 py-4 mt-3">
           <Input
-            placeholder="거래 품목"
+            placeholder="거래의 제목을 입력해주세요 🥕"
             fullWidth
             onChange={handleChange}
             value={inputData.title}

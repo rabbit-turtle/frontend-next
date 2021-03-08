@@ -17,6 +17,11 @@ module.exports = {
           DEFAULT: '#b2dfdb',
           dark: '#80cbc4',
         },
+        black: {
+          'op-3': 'rgba(0,0,0,0.3)',
+          'op-5': 'rgba(0,0,0,0.5)',
+          'op-7': 'rgba(0,0,0,0.7)',
+        },
       },
       borderRadius: {
         50: '50%',
