@@ -6,6 +6,12 @@ module.exports = {
       margin: {
         floatingr: '0 0 0 calc(50% - 1px)',
       },
+      minHeight: {
+        520: '520px',
+      },
+      maxHeight: {
+        640: '640px',
+      },
       colors: {
         primary: {
           light: '#ffebee',

@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect, SetStateAction } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { useMutation } from '@apollo/client';
 import Button from '@material-ui/core/Button';
 import Input from '@material-ui/core/Input';
@@ -9,7 +10,7 @@ import { ICoords } from 'types';
 import { CREATE_ROOM } from '_graphql/mutations';
 
 interface ICreateRoomModal {
-  setIsCreateModalOn: React.Dispatch<SetStateAction<boolean>>;
+  setIsCreateModalOn: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
@@ -71,13 +72,23 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
     naver.maps.Event.addListener(map, 'click', handleMapClick);
   }, [map]);
 
+  useEffect(() => {
+    console.log('created room', data);
+
+    setIsCreateModalOn(false);
+  }, [data]);
+
   return (
-    <div className="h-screen bg-black-op-3 z-20" ref={modalRef} onClick={handleModalClick}>
+    <div
+      className="fixed inset-0 bg-black-op-3 z-20  overflow-auto"
+      ref={modalRef}
+      onClick={handleModalClick}
+    >
       <form
-        className="fixed left-10 right-10 top-10 bottom-10 my-auto  flex flex-col justify-center items-center p-8 bg-white rounded-3xl shadow-2xl"
+        className="absolute inset-10 flex flex-col justify-center items-center min-h-520 max-h-640 p-8 m-auto bg-white rounded-3xl shadow-2xl overflow-auto"
         onSubmit={handleSubmit}
       >
-        <Typography variant="h6">새로운 거래</Typography>
+        <Image src="/favicon.png" width={110} height={110} alt="logo" />
         <div className="flex flex-col justify-between w-full h-28 py-4 mt-3">
           <Input
             placeholder="거래의 제목을 입력해주세요 🥕"
