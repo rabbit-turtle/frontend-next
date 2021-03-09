@@ -1,13 +1,6 @@
 import React, { useEffect } from 'react';
-import { useLazyQuery, gql } from '@apollo/client';
-
-const GOOGLE_LOGIN = gql`
-  query LoginByGoogle($google_token: String!) {
-    loginByGoogle(google_token: $google_token) {
-      value
-    }
-  }
-`;
+import { useLazyQuery } from '@apollo/client';
+import { GOOGLE_LOGIN } from 'operations/queries';
 
 function Login() {
   const [googleLogin, { called, loading, data }] = useLazyQuery(GOOGLE_LOGIN);

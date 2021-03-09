@@ -38,7 +38,7 @@ function MapPage({ result }) {
       map: _map,
       icon: {
         url: `/images/${type}.png`,
-        scaledSize: naver.maps.Size(50, 30),
+        // scaledSize: naver.maps.Size(50, 30),
       },
       animation: naver.maps.Animation.BOUNCE,
     };
@@ -95,9 +95,7 @@ function MapPage({ result }) {
     const newPosition = new naver.maps.LatLng(latitude, longitude);
 
     setCurrentLocation({ latitude, longitude });
-
     sendMessage(ROOM_ID as string, { latitude, longitude });
-
     getDistanceProgress(AnimalType.rabbit, latitude, longitude);
 
     if (!rabbitMarker.current) {
@@ -191,7 +189,7 @@ function MapPage({ result }) {
 export const getServerSideProps: GetServerSideProps = async ({
   query,
 }: GetServerSidePropsContext) => {
-  const dif = Math.floor((new Date('2021-03-21 15:00:00').valueOf() - Date.now()) / 1000 / 60);
+  const dif = Math.floor((new Date('2021-03-09 20:30:00').valueOf() - Date.now()) / 1000 / 60);
 
   //
   return {

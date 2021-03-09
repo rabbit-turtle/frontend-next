@@ -64,7 +64,7 @@ function ProgressBar({ type, value }: IProgressBar) {
 
   return (
     <RabbitTurtleSlider
-      value={type === 'distance' ? value : getTimevalue(Number(value))}
+      value={type === 'distance' ? value : getTimevalue(value as number)}
       disabled
       marks={type === 'distance' && distanceMark}
       ThumbComponent={ProgressThumb}
