@@ -6,7 +6,7 @@ import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Template from 'components/template';
 import theme from 'styles/theme';
-import { useApollo } from 'utils/apolloClient';
+import { useApollo } from 'apollo/apolloClient';
 import 'styles/tailwind.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
