@@ -7,9 +7,7 @@ function Login() {
 
   useEffect(() => {
     const onSuccess = googleUser => {
-      console.log('gguser', googleUser);
       const id_token = googleUser.getAuthResponse().id_token;
-      console.log('id_token', id_token);
 
       googleLogin({ variables: { google_token: id_token } });
     };
@@ -33,7 +31,7 @@ function Login() {
     window.onload = initGoogle;
   }, []);
 
-  console.log(data);
+  console.log('data>>>', data);
 
   return (
     <>

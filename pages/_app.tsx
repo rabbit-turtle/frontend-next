@@ -38,6 +38,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             type="text/javascript"
             src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}`}
           ></script>
+          <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
         </Head>
         <ApolloProvider client={apolloClient}>
           <ThemeProvider theme={theme}>
