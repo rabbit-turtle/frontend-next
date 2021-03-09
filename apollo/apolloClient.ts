@@ -27,7 +27,7 @@ const createApolloClient = () => {
     ssrMode: typeof window === 'undefined',
     link: authLink.concat(
       new HttpLink({
-        uri: 'http://10.231.1.143:8000/graphql',
+        uri: process.env.NEXT_PUBLIC_GRAPHQL_SERVER,
       }),
     ),
     cache: new InMemoryCache(),

@@ -2,7 +2,7 @@ export interface IChatlog {
   id?: string;
   content: string;
   isSender: boolean;
-  created_at: string;
+  createdAt: string;
 }
 
 export interface ICoords {

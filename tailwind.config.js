@@ -50,6 +50,9 @@ module.exports = {
       backgroundImage: theme => ({
         'rabbit-turtle': "url('/images/background.png')",
       }),
+      maxWidth: {
+        '2/3': '66%',
+      },
     },
   },
   variants: {
