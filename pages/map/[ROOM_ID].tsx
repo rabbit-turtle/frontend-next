@@ -21,15 +21,15 @@ function MapPage({ result }) {
   const { map, loading } = useNavermap();
   const router = useRouter();
   const { ROOM_ID } = router.query;
-  const { enterRoom, sendMessage, isConnected, received } = useWebsocket();
+  const { enterRoom, sendMessage, isSocketConnected, received } = useWebsocket();
   const rabbitMarker = useRef(null);
   const turtleMarker = useRef(null);
 
   useEffect(() => {
-    if (!ROOM_ID || !isConnected) return;
+    if (!ROOM_ID || !isSocketConnected) return;
 
     enterRoom(ROOM_ID as string);
-  }, [ROOM_ID, isConnected]);
+  }, [ROOM_ID, isSocketConnected]);
 
   const getMarkerOptions = useCallback((type: string, position: any, _map = map) => {
     const { naver } = window;
@@ -95,7 +95,11 @@ function MapPage({ result }) {
     const newPosition = new naver.maps.LatLng(latitude, longitude);
 
     setCurrentLocation({ latitude, longitude });
-    sendMessage(ROOM_ID as string, { latitude, longitude });
+    sendMessage({
+      ROOM_ID: ROOM_ID as string,
+      message: { latitude, longitude },
+      created_at: new Date(),
+    });
     getDistanceProgress(AnimalType.rabbit, latitude, longitude);
 
     if (!rabbitMarker.current) {
@@ -118,7 +122,7 @@ function MapPage({ result }) {
   }, []);
 
   useEffect(() => {
-    if (!map || !isConnected) return;
+    if (!map || !isSocketConnected) return;
     const optionObj = {
       maximumAge: 30000,
       timeout: 27000,
@@ -139,7 +143,7 @@ function MapPage({ result }) {
     });
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [map, isConnected]);
+  }, [map, isSocketConnected]);
 
   //상대방 좌표가 변경됐을 때
   useEffect(() => {

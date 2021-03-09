@@ -1,8 +1,14 @@
+export interface IRoomLog {
+  id: string;
+  recentChat: IChatlog | null;
+  roomStatus: { id: number; name: string };
+}
+
 export interface IChatlog {
   id?: string;
   content: string;
   isSender: boolean;
-  createdAt: string;
+  created_at: string;
 }
 
 export interface ICoords {

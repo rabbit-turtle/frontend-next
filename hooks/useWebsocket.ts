@@ -1,25 +1,37 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ICoords } from 'types';
 import { SOCKET_MESSAGE_TYPE } from 'constants/index';
+import { useReactiveVar } from '@apollo/client';
+import { currentSocketVar, isSocketConnectedVar } from 'apollo/store';
+
+export interface sendMessageInput {
+  id?: string;
+  ROOM_ID: string;
+  message: string | ICoords;
+  created_at: Date;
+}
 
 interface UserWebsocketResult {
   enterRoom: (ROOM_ID: string) => void;
-  sendMessage: (ROOM_ID: string, message: string | ICoords) => void;
-  isConnected: boolean;
+  sendMessage: (sendMessageData: sendMessageInput) => void;
+  isSocketConnected: boolean;
   received: string;
 }
 
 export const useWebsocket = (): UserWebsocketResult => {
-  const socketRef = useRef<WebSocket>();
   const [received, setReceived] = useState<string>('');
-  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const socket = useReactiveVar(currentSocketVar);
+  const isSocketConnected = useReactiveVar(isSocketConnectedVar);
 
   useEffect(() => {
-    socketRef.current = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_SERVER);
-    const { current: socket } = socketRef;
+    if (!socket) {
+      currentSocketVar(new WebSocket(process.env.NEXT_PUBLIC_SOCKET_SERVER));
+      return;
+    }
 
     socket.onopen = () => {
-      setIsConnected(true);
+      console.log('***this should be called only once!***');
+      isSocketConnectedVar(true);
     };
 
     socket.onerror = () => {
@@ -30,41 +42,42 @@ export const useWebsocket = (): UserWebsocketResult => {
       setReceived(e.data);
     };
 
-    return () => {
-      socket.close();
-    };
-  }, []);
+    // return () => {
+    //   socket.close();
+    // };
+  }, [socket]);
 
   const enterRoom = useCallback(
     (ROOM_ID: string) => {
-      if (!isConnected) return;
+      if (!socket || !isSocketConnected) return;
 
-      socketRef.current.send(
+      socket.send(
         JSON.stringify({
           ROOM_ID,
           action: 'enterRoom',
         }),
       );
     },
-    [socketRef.current, isConnected],
+    [socket, isSocketConnected],
   );
 
   const sendMessage = useCallback(
-    (ROOM_ID: string, message: string | ICoords) => {
-      if (!isConnected) return; // 연결 되기 전에는 sendMessage 못함.
+    (sendMessageData: sendMessageInput) => {
+      if (!socket || !isSocketConnected) return;
 
-      socketRef.current.send(
+      socket.send(
         JSON.stringify({
-          ROOM_ID,
-          message,
           action: 'sendMessage',
+          ...sendMessageData,
           messageType:
-            typeof message === 'string' ? SOCKET_MESSAGE_TYPE.chat : SOCKET_MESSAGE_TYPE.map,
+            typeof sendMessageData.message === 'string'
+              ? SOCKET_MESSAGE_TYPE.chat
+              : SOCKET_MESSAGE_TYPE.map,
         }),
       );
     },
-    [socketRef.current, isConnected],
+    [socket, isSocketConnected],
   );
 
-  return { enterRoom, sendMessage, isConnected, received };
+  return { enterRoom, sendMessage, received, isSocketConnected };
 };
