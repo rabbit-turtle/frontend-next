@@ -1,11 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CreateRoomModal from 'components/CreateRoomModal';
+import { useQuery, useApolloClient } from '@apollo/client';
+import { GET_ROOMS, GET_ROOM } from 'apollo/queries';
+import RoomLog from 'components/RoomLog';
+import { IRoomLog } from 'types';
+import { useWebsocket } from 'hooks/useWebsocket';
+import { useChatReceived } from 'hooks/useChatReceived';
 
 function RoomList() {
   const [isCreateModalOn, setIsCreateModalOn] = useState<boolean>(false);
+  const { data, loading } = useQuery(GET_ROOMS);
+  const { received, enterRoom, isSocketConnected } = useWebsocket();
+  useChatReceived(received);
+
+  useEffect(() => {
+    if (loading || !data || !isSocketConnected) return;
+
+    data.rooms.forEach(room => {
+      enterRoom(room.id);
+    });
+  }, [data, loading, isSocketConnected]);
 
   return (
-    <div className="relative h-screen transform">
+    <div className="relative h-screen transform divide-y-2">
+      {data?.rooms.map((room: IRoomLog) => (
+        <RoomLog
+          key={room.id}
+          roomStatus={room.roomStatus}
+          recentChat={room.recentChat}
+          id={room.id}
+        />
+      ))}
       {isCreateModalOn ? (
         <CreateRoomModal setIsCreateModalOn={setIsCreateModalOn} />
       ) : (

@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useEffect } from 'react';
+import { useWebsocket } from 'hooks/useWebsocket';
 
 export default function Home() {
   return (

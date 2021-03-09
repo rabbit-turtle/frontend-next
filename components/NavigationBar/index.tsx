@@ -12,7 +12,7 @@ function NavigationBar({ title }: { title: string }) {
   return (
     <nav className="flex items-center justify-between py-3 px-7">
       <span className="cursor-pointer">
-        <ArrowBackIosRounded fontSize="small" onClick={() => router.back()} />
+        <ArrowBackIosRounded fontSize="small" onClick={() => router.push('/list')} />
       </span>
       <Typography variant="h6">{title}</Typography>
       <Link

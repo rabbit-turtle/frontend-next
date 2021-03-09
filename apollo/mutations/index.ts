@@ -8,3 +8,20 @@ export const CREATE_ROOM = gql`
     }
   }
 `;
+
+export const CREATE_CHAT = gql`
+  mutation CreateChat($createChatData: CreateChatInput!) {
+    createChat(createChatData: $createChatData) {
+      id
+      content
+      created_at
+    }
+  }
+`;
+
+export interface CreateChatInput {
+  id: string;
+  room_id: string;
+  content: string;
+  created_at: Date;
+}

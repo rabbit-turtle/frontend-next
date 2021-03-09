@@ -2,49 +2,67 @@ import React, { useEffect, useState, useRef } from 'react';
 import Head from 'next/head';
 import TextField from '@material-ui/core/TextField';
 import Chatlog from 'components/ChatLog';
-import { IChatlog } from 'types';
 import { useWebsocket } from 'hooks/useWebsocket';
 import { useRouter } from 'next/router';
 import dayjs from 'dayjs';
 import NavigationBar from 'components/NavigationBar';
+import { useLazyQuery } from '@apollo/client';
+import { GET_ROOM } from 'apollo/queries';
+import { CreateChatInput } from 'apollo/mutations';
+import { v4 as uuidv4 } from 'uuid';
+import { useChatReceived } from 'hooks/useChatReceived';
+import { useCreateChat } from 'apollo/mutations/createChat';
 
 function Chat() {
   const [value, setValue] = useState<string>('');
-  const [chatLogs, setChatlog] = useState<IChatlog[]>([]);
   const router = useRouter();
   const { ROOM_ID } = router.query;
   const chatPane = useRef(null);
 
-  const { enterRoom, sendMessage, isConnected, received } = useWebsocket();
+  const [getRoom, { data }] = useLazyQuery(GET_ROOM);
+  const { enterRoom, sendMessage, received, isSocketConnected } = useWebsocket();
+  useChatReceived(received);
+  const { createChat } = useCreateChat(ROOM_ID as string);
 
   useEffect(() => {
-    if (!ROOM_ID || !isConnected) return;
+    if (!ROOM_ID) return;
+
+    getRoom({ variables: { room_id: ROOM_ID } });
+  }, [ROOM_ID]);
+
+  useEffect(() => {
+    if (!ROOM_ID || !isSocketConnected) return;
 
     enterRoom(ROOM_ID as string);
-  }, [ROOM_ID, isConnected]);
+  }, [ROOM_ID, isSocketConnected]);
 
   useEffect(() => {
-    chatPane.current?.scrollBy({ behavior: 'smooth', top: 1000 });
-  }, [chatLogs]);
-
-  useEffect(() => {
-    if (!received) return;
-    const { message, createdAt } = JSON.parse(received);
-    setChatlog([
-      ...chatLogs,
-      { isSender: false, content: message, createdAt: dayjs(createdAt).format('h:mm A') },
-    ]);
-  }, [received]);
+    chatPane.current?.scrollBy({ behavior: 'smooth', top: chatPane.current?.offsetHeight });
+  }, [data]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
 
     if (!value || !ROOM_ID) return;
-    sendMessage(ROOM_ID as string, value);
-    setChatlog([
-      ...chatLogs,
-      { isSender: true, content: value, createdAt: dayjs(new Date()).format('h:mm A') },
-    ]);
+    const id = uuidv4();
+    const created_at = new Date();
+    sendMessage({
+      id,
+      ROOM_ID: ROOM_ID as string,
+      message: value,
+      created_at,
+    });
+
+    createChat({
+      variables: {
+        createChatData: {
+          id,
+          room_id: ROOM_ID,
+          content: value,
+          created_at,
+        } as CreateChatInput,
+      },
+    });
     setValue('');
   };
 
@@ -57,14 +75,14 @@ function Chat() {
       <Head>
         <title>채팅</title>
       </Head>
-      <NavigationBar title={'채팅'} />
+      <NavigationBar title={data?.room.title} />
       <div className="h-5/6 overflow-auto bg-gray-100" ref={chatPane}>
-        {chatLogs?.map((chat, idx) => (
+        {data?.room.chats.map(chat => (
           <Chatlog
-            key={idx}
+            key={chat.id}
             isSender={chat.isSender}
             content={chat.content}
-            createdAt={chat.createdAt}
+            created_at={dayjs(chat.created_at).format('h:mm A')}
           />
         ))}
       </div>
