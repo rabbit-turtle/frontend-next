@@ -3,11 +3,10 @@ import Image from 'next/image';
 import { useMutation } from '@apollo/client';
 import Button from '@material-ui/core/Button';
 import Input from '@material-ui/core/Input';
-import Typography from '@material-ui/core/Typography';
 import Skeleton from 'components/Skeleton';
 import { useNavermap } from 'hooks/useNavermap';
 import { ICoords } from 'types';
-import { CREATE_ROOM } from '_graphql/mutations';
+import { CREATE_ROOM } from 'apollo/mutations';
 
 interface ICreateRoomModal {
   setIsCreateModalOn: React.Dispatch<React.SetStateAction<boolean>>;
