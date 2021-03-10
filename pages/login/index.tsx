@@ -7,9 +7,7 @@ function Login() {
 
   useEffect(() => {
     const onSuccess = googleUser => {
-      console.log('gguser', googleUser);
       const id_token = googleUser.getAuthResponse().id_token;
-      console.log('id_token', id_token);
 
       googleLogin({ variables: { google_token: id_token } });
     };
@@ -19,7 +17,7 @@ function Login() {
     };
 
     const initGoogle = () => {
-      const { gapi } = window as any;
+      const { gapi } = window;
       gapi?.load('auth2', () => {
         const myauth2 = gapi.auth2.init({
           client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
@@ -33,7 +31,7 @@ function Login() {
     window.onload = initGoogle;
   }, []);
 
-  console.log(data);
+  console.log('data>>>', data);
 
   return (
     <>

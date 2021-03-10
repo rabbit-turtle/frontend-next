@@ -11,6 +11,7 @@ module.exports = {
       },
       maxHeight: {
         640: '640px',
+        calc: 'calc(100vh - 150px)',
       },
       colors: {
         primary: {
@@ -31,6 +32,10 @@ module.exports = {
       },
       borderRadius: {
         50: '50%',
+      },
+      zIndex: {
+        100: 100,
+        110: 110,
       },
       keyframes: {
         run: {

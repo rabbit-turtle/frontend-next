@@ -32,7 +32,7 @@ function MapPage({ result }) {
   }, [ROOM_ID, isConnected]);
 
   const getMarkerOptions = useCallback((type: string, position: any, _map = map) => {
-    const { naver } = window as any;
+    const { naver } = window;
     return {
       position: position.destinationPoint(90, 15),
       map: _map,
@@ -58,12 +58,12 @@ function MapPage({ result }) {
   };
 
   const getNaverLatLng = ({ latitude, longitude }: ICoords) => {
-    const { naver } = window as any;
+    const { naver } = window;
     return new naver.maps.LatLng(latitude, longitude);
   };
 
   const fitBoundsMap = (_map: any, ...naverpoints: any[]) => {
-    const { naver } = window as any;
+    const { naver } = window;
     const destPoint = getNaverLatLng({ latitude: result.lat, longitude: result.lng }).toPoint();
     let minx = 999,
       miny = 999,
@@ -90,7 +90,7 @@ function MapPage({ result }) {
   }, []);
 
   const onGeolocationSuccess = (position: GeolocationPosition) => {
-    const { naver } = window as any;
+    const { naver } = window;
     const { latitude, longitude } = position.coords;
     const newPosition = new naver.maps.LatLng(latitude, longitude);
 
@@ -131,7 +131,7 @@ function MapPage({ result }) {
     );
 
     //목적지 좌표
-    const { naver } = window as any;
+    const { naver } = window;
     console.log(result.lat, result.lng);
     const destinationMarker = new naver.maps.Marker({
       position: new naver.maps.LatLng(result.lat, result.lng),
