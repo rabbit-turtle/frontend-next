@@ -32,6 +32,10 @@ module.exports = {
       borderRadius: {
         50: '50%',
       },
+      zIndex: {
+        100: 100,
+        110: 110,
+      },
       keyframes: {
         run: {
           '0%': {

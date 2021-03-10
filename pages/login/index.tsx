@@ -17,7 +17,7 @@ function Login() {
     };
 
     const initGoogle = () => {
-      const { gapi } = window as any;
+      const { gapi } = window;
       gapi?.load('auth2', () => {
         const myauth2 = gapi.auth2.init({
           client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,

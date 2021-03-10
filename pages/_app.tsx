@@ -9,6 +9,13 @@ import theme from 'styles/theme';
 import { useApollo } from 'apollo/apolloClient';
 import 'styles/tailwind.css';
 
+declare global {
+  interface Window {
+    naver: any;
+    gapi: any;
+  }
+}
+
 function MyApp({ Component, pageProps }: AppProps) {
   const apolloClient = useApollo(pageProps.initialApolloState);
 
@@ -31,7 +38,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           <link rel="shortcut icon" href="/favicon.png" type="image/x-icon" />
           <script
             type="text/javascript"
-            src={`https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_MAP_CLIENT_ID}`}
+            src={`https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_MAP_CLIENT_ID}&submodules=geocoder`}
           ></script>
           <script
             defer
