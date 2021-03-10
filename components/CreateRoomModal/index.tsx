@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useMutation } from '@apollo/client';
-import Typography from '@material-ui/core/Typography';
+import { useRouter } from 'next/router';
 import Input from '@material-ui/core/Input';
 import Skeleton from 'components/Skeleton';
 import DaumPostcode from 'components/DaumPostcode';
@@ -13,14 +13,21 @@ interface ICreateRoomModal {
   setIsCreateModalOn: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+interface IinputData {
+  title: string;
+  reserved_time: string;
+  title_valid: boolean;
+}
+
 function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
   const { map, loading } = useNavermap();
   const [location, setLocation] = useState<ICoords>();
-  const [inputData, setInputData] = useState({
+  const [inputData, setInputData] = useState<IinputData>({
     title: '',
     reserved_time: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
       .toISOString()
       .slice(0, 16),
+    title_valid: true,
   });
   const [isDaumPostcodeOn, setIsDaumPostcodeOn] = useState<boolean>(false);
   const [address, setAddress] = useState<string>('');
@@ -30,12 +37,15 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setInputData({ ...inputData, [name]: value });
+    const newInputData = { ...inputData, [name]: value };
+    newInputData.title_valid = !!newInputData.title;
+    setInputData(newInputData);
   };
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
     const { title, reserved_time } = inputData;
+    if (!title) return;
     createRoom({
       variables: {
         createRoomData: {
@@ -65,14 +75,12 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
   const setMarkerPosition = (coord: ICoords | { x: number; y: number }) => {
     const { naver } = window;
     if (!markerRef.current) {
-      console.log('create new marker');
       markerRef.current = new naver.maps.Marker({
         position: coord,
         map,
       });
       return;
     }
-    console.log('change marker location');
     markerRef.current.setPosition(coord);
   };
 
@@ -103,6 +111,10 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
   useEffect(() => {
     if (!data) return;
     console.log('created room', data);
+
+    navigator.clipboard.writeText(`${window.location.origin}/invitation/test`).then(() => {
+      console.log('copy completed');
+    }, console.log);
     setIsCreateModalOn(false);
   }, [data]);
 
@@ -113,7 +125,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
       onClick={handleModalClick}
     >
       <form
-        className="absolute inset-10 flex flex-col justify-center items-center min-h-520 py-6 px-6 sm:px-12 m-auto bg-white rounded-3xl shadow-2xl overflow-scroll"
+        className="absolute inset-10 max-h-calc flex flex-col justify-center items-center min-h-520 py-6 px-6 sm:px-12 m-auto bg-white rounded-3xl shadow-2xl overflow-scroll"
         onSubmit={handleSubmit}
       >
         <Image src="/favicon.png" width={110} height={110} alt="logo" />
@@ -121,6 +133,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
           <Input
             placeholder="거래의 제목을 입력해주세요 🥕"
             fullWidth
+            error={!inputData.title_valid}
             onChange={handleChange}
             value={inputData.title}
             name="title"

@@ -11,6 +11,7 @@ module.exports = {
       },
       maxHeight: {
         640: '640px',
+        calc: 'calc(100vh - 150px)',
       },
       colors: {
         primary: {
