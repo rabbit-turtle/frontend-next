@@ -3,7 +3,7 @@ import { useLazyQuery } from '@apollo/client';
 import { GOOGLE_LOGIN } from 'apollo/queries';
 
 function Login() {
-  const [googleLogin, { called, loading, data }] = useLazyQuery(GOOGLE_LOGIN);
+  const [googleLogin, { called, loading, data: googleData }] = useLazyQuery(GOOGLE_LOGIN);
 
   useEffect(() => {
     const onSuccess = googleUser => {
@@ -31,7 +31,10 @@ function Login() {
     window.onload = initGoogle;
   }, []);
 
-  console.log('data>>>', data);
+  useEffect(() => {
+    if (!googleData) return;
+    console.log('google>>>', googleData);
+  }, [googleData]);
 
   return (
     <>

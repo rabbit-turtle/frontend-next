@@ -103,6 +103,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
     naver.maps.Service.geocode({ query: address }, (status: any, response: any) => {
       if (status !== naver.maps.Service.Status.OK) return console.log('something wrong!');
       const { x, y } = response.v2.addresses[0];
+      setLocation({ latitude: x, longitude: y });
       mapSetCenter(map, x, y);
       setMarkerPosition({ x, y });
     });
