@@ -2,8 +2,8 @@ import React from 'react';
 import { IChatlog } from 'types';
 import Image from 'next/image';
 
-function Chatlog({ isSender, content, createdAt }: IChatlog) {
-  const Time = <span className="font-extralight text-xs text-gray-800">{createdAt}</span>;
+function Chatlog({ isSender, content, created_at }: IChatlog) {
+  const Time = <span className="font-extralight text-xs text-gray-800">{created_at}</span>;
   return (
     <div
       className={`flex ${isSender ? 'justify-end' : 'justify-start'}
