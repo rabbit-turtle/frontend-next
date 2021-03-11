@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import CreateRoomModal from 'components/CreateRoomModal';
-import { useQuery, useApolloClient } from '@apollo/client';
-import { GET_ROOMS, GET_ROOM } from 'apollo/queries';
+import { useQuery } from '@apollo/client';
+import { GET_ROOMS } from 'apollo/queries';
 import RoomLog from 'components/RoomLog';
 import { IRoomLog } from 'types';
 import { useWebsocket } from 'hooks/useWebsocket';
