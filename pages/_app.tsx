@@ -13,6 +13,7 @@ declare global {
   interface Window {
     naver: any;
     gapi: any;
+    Kakao: any;
   }
 }
 
@@ -40,11 +41,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             type="text/javascript"
             src={`https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_MAP_CLIENT_ID}&submodules=geocoder`}
           ></script>
-          <script
-            defer
-            type="text/javascript"
-            src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}`}
-          ></script>
+          <script src="https://developers.kakao.com/sdk/js/kakao.js" defer></script>
           <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
         </Head>
         <ApolloProvider client={apolloClient}>
