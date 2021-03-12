@@ -1,9 +1,12 @@
 import { useEffect } from 'react';
 import { useApolloClient, gql } from '@apollo/client';
 import { GET_ROOM } from 'apollo/queries';
+import { toast } from 'react-toastify';
+import { useRouter } from 'next/router';
 
 export const useChatReceived = (received: string) => {
   const apolloClient = useApolloClient();
+  const router = useRouter();
 
   useEffect(() => {
     if (!received) return;
@@ -33,20 +36,32 @@ export const useChatReceived = (received: string) => {
           },
         },
       });
-
-      return;
+    } else {
+      apolloClient.writeFragment({
+        id: `Room:${ROOM_ID}`,
+        fragment: gql`
+          fragment RecentChat on Room {
+            recentChat
+          }
+        `,
+        data: {
+          recentChat: newChatFromSocket,
+        },
+      });
     }
 
-    apolloClient.writeFragment({
-      id: `Room:${ROOM_ID}`,
-      fragment: gql`
-        fragment RecentChat on Room {
-          recentChat
-        }
-      `,
-      data: {
-        recentChat: newChatFromSocket,
-      },
+    const isCurrentRoom = router.query.hasOwnProperty('ROOM_ID');
+    const isTheSameRoom = router.query['ROOM_ID'] === ROOM_ID;
+
+    if (isCurrentRoom && isTheSameRoom) return;
+
+    toast(`💌 ${message}`, {
+      position: 'top-center',
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      onClick: () => router.push(`${isCurrentRoom ? '' : '/chat/'}${ROOM_ID}`),
     });
   }, [received]);
 };
