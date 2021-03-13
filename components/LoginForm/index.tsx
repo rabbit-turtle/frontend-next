@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 import Image from 'next/image';
 import { useLazyQuery, useReactiveVar } from '@apollo/client';
 import { GOOGLE_LOGIN } from 'apollo/queries';
-import { invitedRoomId } from 'apollo/store';
+import { invitedRoomIdVar } from 'apollo/store';
 
 function Login(props) {
-  const _invitedRoomId = useReactiveVar(invitedRoomId);
+  const _invitedRoomIdVar = useReactiveVar(invitedRoomIdVar);
   const [googleLogin, { called, loading, data: googleData }] = useLazyQuery(GOOGLE_LOGIN);
 
   const handleKakaoLogin = () => {
