@@ -125,7 +125,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
 
   return (
     <div
-      className="absolute inset-0 bg-black-op-3 z-20  overflow-auto"
+      className="fixed inset-0 bg-black-op-3 z-20  overflow-auto"
       ref={modalRef}
       onClick={handleModalClick}
     >
