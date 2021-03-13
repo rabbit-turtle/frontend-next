@@ -31,31 +31,20 @@ export interface CreateRoomInput {
 }
 
 export const useCreateRoom = () => {
-  const [createRoom] = useMutation(CREATE_ROOM, {
+  const [createRoom, { data: createdRoom }] = useMutation(CREATE_ROOM, {
     update(cache, { data }) {
-      // const newChatFromResponse = data?.createChat;
       const existingRooms = cache.readQuery({
         query: GET_ROOMS,
+      }) as { rooms: any[] }; // 사실은 ROOM[]인데...눈물
+
+      cache.writeQuery({
+        query: GET_ROOMS,
+        data: {
+          rooms: [data.createRoom, ...existingRooms.rooms],
+        },
       });
-      console.log('existingRooms', existingRooms);
-      console.log('data', data);
-
-      // cache.writeQuery({query: GET_ROOMS, data: {
-      //   rooms: [...existingRooms.rooms, data]
-      // }})
-
-      // cache.writeQuery({
-      //   query: GET_ROOMS,
-      //   data: {
-      //     room: {
-      //       ...existingRoom.room,
-      //       recentChat: newChatFromResponse,
-      //       chats: [...existingRoom.room.chats, newChatFromResponse],
-      //     },
-      //   },
-      // });
     },
   });
 
-  return { createRoom };
+  return { createRoom, createdRoom };
 };

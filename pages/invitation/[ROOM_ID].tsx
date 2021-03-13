@@ -1,11 +1,9 @@
 import { useEffect } from 'react';
 import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
-import Typography from '@material-ui/core/Typography';
 import { invitedRoomIdVar } from 'apollo/store';
 import Skeleton from 'components/Skeleton';
 import NavigationBar from 'components/NavigationBar';
-import LoginForm from 'components/LoginForm';
 
 function Invitation({ isLogined }: { isLogined: boolean }) {
   const router = useRouter();
@@ -14,6 +12,7 @@ function Invitation({ isLogined }: { isLogined: boolean }) {
     const { ROOM_ID } = router.query;
     invitedRoomIdVar(ROOM_ID as string);
     if (isLogined) router.push(`/chat/${ROOM_ID}`);
+    else router.push('/login');
   }, []);
 
   if (isLogined)
@@ -26,11 +25,8 @@ function Invitation({ isLogined }: { isLogined: boolean }) {
       </main>
     );
   return (
-    <div className="flex flex-col justify-center h-screen">
-      <div className="flex justify-center pb-6">
-        <Typography variant="h6">🐰 토끼와 거북이는 로그인을 해야 이용할 수 있어요! 🐢</Typography>
-      </div>
-      <LoginForm />
+    <div className="h-screen">
+      <Skeleton />
     </div>
   );
 }

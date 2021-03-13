@@ -1,14 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { useMutation } from '@apollo/client';
-import { useRouter } from 'next/router';
 import Input from '@material-ui/core/Input';
+import { toast } from 'react-toastify';
 import Skeleton from 'components/Skeleton';
 import DaumPostcode from 'components/DaumPostcode';
 import { useNavermap } from 'hooks/useNavermap';
+import { CreateRoomInput, useCreateRoom } from 'apollo/mutations/createRoom';
 import { ICoords } from 'types';
-import { CREATE_ROOM } from 'apollo/mutations';
-import { CreateRoomInput } from 'apollo/mutations/createRoom';
 
 interface ICreateRoomModal {
   setIsCreateModalOn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -34,8 +32,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
   const [address, setAddress] = useState<string>('');
   const modalRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef(null);
-  const [createRoom, { data, error }] = useMutation(CREATE_ROOM);
-  // const { createRoom } = useCreateRoom();
+  const { createRoom, createdRoom } = useCreateRoom();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -48,13 +45,14 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
     e.preventDefault();
     const { title, reserved_time } = inputData;
     if (!title) return;
+    const queryObj = { title, reserved_time, location };
+    const createRoomData = Object.keys(queryObj).reduce((acc, key) => {
+      return queryObj[key] ? { ...acc, [key]: queryObj[key] } : acc;
+    }, {});
+
     createRoom({
       variables: {
-        createRoomData: {
-          title,
-          reserved_time,
-          location,
-        } as CreateRoomInput,
+        createRoomData: createRoomData as CreateRoomInput,
       },
     });
   };
@@ -69,10 +67,22 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
     setIsDaumPostcodeOn(prev => !prev);
   }, []);
 
-  const handlePostcodeComplete = useCallback((_address: string) => {
-    setAddress(_address);
-    setIsDaumPostcodeOn(false);
-  }, []);
+  const handlePostcodeComplete = useCallback(
+    (_address: string) => {
+      const mapSetCenter = (_map: any, x: number, y: number) => _map.panTo({ x, y });
+      const { naver } = window;
+      setAddress(_address);
+      setIsDaumPostcodeOn(false);
+      naver.maps.Service.geocode({ query: _address }, (status: any, response: any) => {
+        if (status !== naver.maps.Service.Status.OK) return console.log('something wrong!');
+        const { x, y } = response.v2.addresses[0];
+        setLocation({ latitude: x, longitude: y });
+        setMarkerPosition({ x, y });
+        mapSetCenter(map, x, y);
+      });
+    },
+    [map],
+  );
 
   const setMarkerPosition = (coord: ICoords | { x: number; y: number }) => {
     const { naver } = window;
@@ -93,35 +103,37 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
       const { _lat: latitude, _lng: longitude } = e.coord;
       setLocation({ latitude, longitude });
       setMarkerPosition(e.coord);
+      naver.maps.Service.reverseGeocode(
+        {
+          coords: e.coord,
+        },
+        (status: any, response: any) => {
+          if (status === naver.maps.Service.Status.ERROR) return console.log(status);
+          setAddress(response.v2.address.jibunAddress);
+        },
+      );
     };
     naver.maps.Event.addListener(map, 'click', handleMapClick);
   }, [map]);
 
+  //방이 생성되었을 때
   useEffect(() => {
-    if (!address || !map) return;
-    const { naver } = window;
-    const mapSetCenter = (_map: any, x: number, y: number) => _map.setCenter({ x, y });
+    if (!createdRoom) return;
+    navigator.clipboard
+      .writeText(`${window.location.origin}/invitation/${createdRoom.createRoom.id}`)
+      .then(() => {
+        console.log('copy completed');
+      }, console.log);
+    setIsCreateModalOn(false);
 
-    naver.maps.Service.geocode({ query: address }, (status: any, response: any) => {
-      if (status !== naver.maps.Service.Status.OK) return console.log('something wrong!');
-      const { x, y } = response.v2.addresses[0];
-      setLocation({ latitude: x, longitude: y });
-      mapSetCenter(map, x, y);
-      setMarkerPosition({ x, y });
+    toast.info(`초대 링크가 클립보드에 복사되었습니다`, {
+      position: 'bottom-center',
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
     });
-  }, [address]);
-
-  console.log('data', data);
-
-  // useEffect(() => {
-  //   if (!data) return;
-  //   console.log('created room', data);
-
-  //   navigator.clipboard.writeText(`${window.location.origin}/invitation/test`).then(() => {
-  //     console.log('copy completed');
-  //   }, console.log);
-  //   setIsCreateModalOn(false);
-  // }, [data]);
+  }, [createdRoom]);
 
   return (
     <div
@@ -130,7 +142,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
       onClick={handleModalClick}
     >
       <form
-        className="absolute inset-10 max-h-calc flex flex-col justify-center items-center min-h-520 py-6 px-6 sm:px-12 m-auto bg-white rounded-3xl shadow-2xl overflow-scroll"
+        className="fixed inset-10 max-h-calc flex flex-col justify-center items-center min-h-520  max-w-md py-6 px-6 sm:px-12 m-auto bg-white rounded-3xl shadow-2xl overflow-scroll"
         onSubmit={handleSubmit}
       >
         <Image src="/favicon.png" width={110} height={110} alt="logo" />
