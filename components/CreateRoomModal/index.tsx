@@ -34,7 +34,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
   const markerRef = useRef(null);
   const { createRoom, createdRoom } = useCreateRoom();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     const newInputData = { ...inputData, [name]: value };
     newInputData.title_valid = !!newInputData.title;
@@ -84,6 +84,25 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
     [map],
   );
 
+  const handleMapClick = useCallback(
+    (e: any) => {
+      const { naver } = window;
+      const { _lat: latitude, _lng: longitude } = e.coord;
+      setLocation({ latitude, longitude });
+      setMarkerPosition(e.coord);
+      naver.maps.Service.reverseGeocode(
+        {
+          coords: e.coord,
+        },
+        (status: any, response: any) => {
+          if (status === naver.maps.Service.Status.ERROR) return console.log(status);
+          setAddress(response.v2.address.jibunAddress);
+        },
+      );
+    },
+    [map],
+  );
+
   const setMarkerPosition = (coord: ICoords | { x: number; y: number }) => {
     const { naver } = window;
     if (!markerRef.current) {
@@ -99,20 +118,6 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
   useEffect(() => {
     if (!map) return;
     const { naver } = window;
-    const handleMapClick = (e: any) => {
-      const { _lat: latitude, _lng: longitude } = e.coord;
-      setLocation({ latitude, longitude });
-      setMarkerPosition(e.coord);
-      naver.maps.Service.reverseGeocode(
-        {
-          coords: e.coord,
-        },
-        (status: any, response: any) => {
-          if (status === naver.maps.Service.Status.ERROR) return console.log(status);
-          setAddress(response.v2.address.jibunAddress);
-        },
-      );
-    };
     naver.maps.Event.addListener(map, 'click', handleMapClick);
   }, [map]);
 
@@ -151,14 +156,14 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
             placeholder="거래의 제목을 입력해주세요 🥕"
             fullWidth
             error={!inputData.title_valid}
-            onChange={handleChange}
+            onChange={handleInputChange}
             value={inputData.title}
             name="title"
           />
           <Input
             type="datetime-local"
             fullWidth
-            onChange={handleChange}
+            onChange={handleInputChange}
             value={inputData.reserved_time}
             name="reserved_time"
           />
