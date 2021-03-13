@@ -46,9 +46,12 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
     const { title, reserved_time } = inputData;
     if (!title) return;
     const queryObj = { title, reserved_time, location };
-    const createRoomData = Object.keys(queryObj).reduce((acc, key) => {
-      return queryObj[key] ? { ...acc, [key]: queryObj[key] } : acc;
+    const createRoomData = Object.keys(queryObj).reduce((acc, key, idx) => {
+      if (idx !== 2) return queryObj[key] ? { ...acc, [key]: queryObj[key] } : acc;
+      return queryObj[key] ? { ...acc, [key]: JSON.stringify(queryObj[key]) } : acc;
     }, {});
+
+    console.log('createRoomd', createRoomData);
 
     createRoom({
       variables: {
