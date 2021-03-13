@@ -6,6 +6,7 @@ export const CREATE_CHAT = gql`
     createChat(createChatData: $createChatData) {
       id
       content
+      isSender
       created_at
     }
   }

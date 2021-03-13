@@ -29,6 +29,9 @@ function RoomList() {
             key={room.id}
             roomStatus={room.roomStatus}
             recentChat={room.recentChat}
+            lastViewedChat={room.lastViewedChat}
+            title={room.title}
+            location={room.location}
             id={room.id}
           />
         ))}
