@@ -2,6 +2,9 @@ export interface IRoomLog {
   id: string;
   recentChat: IChatlog | null;
   roomStatus: { id: number; name: string };
+  lastViewedChat: IChatlog | null;
+  location: string;
+  title: string;
 }
 
 export interface IChatlog {

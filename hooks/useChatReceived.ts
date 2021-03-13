@@ -3,6 +3,7 @@ import { useApolloClient, gql } from '@apollo/client';
 import { GET_ROOM } from 'apollo/queries';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/router';
+import { SOCKET_MESSAGE_TYPE } from 'constants/index';
 
 export const useChatReceived = (received: string) => {
   const apolloClient = useApolloClient();
@@ -10,7 +11,9 @@ export const useChatReceived = (received: string) => {
 
   useEffect(() => {
     if (!received) return;
-    const { message, created_at, ROOM_ID, id } = JSON.parse(received);
+    const { message, created_at, ROOM_ID, id, messageType } = JSON.parse(received);
+    if (messageType !== SOCKET_MESSAGE_TYPE.chat) return;
+
     const newChatFromSocket = {
       __typename: 'Chat',
       id,
@@ -60,7 +63,7 @@ export const useChatReceived = (received: string) => {
       autoClose: 3000,
       hideProgressBar: false,
       closeOnClick: true,
-      pauseOnHover: true,
+      pauseOnHover: false,
       onClick: () => router.push(`${isCurrentRoom ? '' : '/chat/'}${ROOM_ID}`),
     });
   }, [received]);

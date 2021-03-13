@@ -50,7 +50,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <Component {...pageProps} />
-            <ToastContainer />
+            <ToastContainer newestOnTop />
           </ThemeProvider>
         </ApolloProvider>
       </Template>

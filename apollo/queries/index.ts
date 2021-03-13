@@ -31,6 +31,12 @@ export const GET_ROOMS = gql`
         isSender
         created_at
       }
+      lastViewedChat {
+        id
+        content
+        isSender
+        created_at
+      }
     }
   }
 `;
@@ -48,6 +54,12 @@ export const GET_ROOM = gql`
         name
       }
       recentChat {
+        id
+        content
+        isSender
+        created_at
+      }
+      lastViewedChat {
         id
         content
         isSender

@@ -8,26 +8,43 @@ import dayjs from 'dayjs';
 import NavigationBar from 'components/NavigationBar';
 import { useLazyQuery } from '@apollo/client';
 import { GET_ROOM } from 'apollo/queries';
-import { CreateChatInput } from 'apollo/mutations';
 import { v4 as uuidv4 } from 'uuid';
 import { useChatReceived } from 'hooks/useChatReceived';
-import { useCreateChat } from 'apollo/mutations/createChat';
+import { useCreateChat, CreateChatInput } from 'apollo/mutations/createChat';
+import {
+  useSaveLastViewedChat,
+  SaveLastViewedChatInput,
+} from 'apollo/mutations/saveLastViewedChat';
 
 function Chat() {
   const [value, setValue] = useState<string>('');
+  const chatEndRef = useRef(null);
   const router = useRouter();
   const { ROOM_ID } = router.query;
-  const chatEndRef = useRef(null);
+  const lastChatId = useRef<string>('');
 
   const [getRoom, { data }] = useLazyQuery(GET_ROOM);
   const { enterRoom, sendMessage, received, isSocketConnected } = useWebsocket();
   useChatReceived(received);
   const { createChat } = useCreateChat(ROOM_ID as string);
+  const { saveLastViewedChat } = useSaveLastViewedChat(ROOM_ID as string);
 
   useEffect(() => {
     if (!ROOM_ID) return;
-
     getRoom({ variables: { room_id: ROOM_ID } });
+
+    return () => {
+      if (!lastChatId.current) return;
+
+      saveLastViewedChat({
+        variables: {
+          saveLastViewedChatData: {
+            room_id: ROOM_ID,
+            chat_id: lastChatId.current,
+          } as SaveLastViewedChatInput,
+        },
+      });
+    };
   }, [ROOM_ID]);
 
   useEffect(() => {
@@ -38,6 +55,9 @@ function Chat() {
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const chatsLength = data?.room.chats.length;
+    const lastChat = data?.room.chats[chatsLength - 1];
+    if (lastChat) lastChatId.current = lastChat.id;
   }, [data]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
