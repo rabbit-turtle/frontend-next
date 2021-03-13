@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import { useNavermap } from 'hooks/useNavermap';
 import { useWebsocket } from 'hooks/useWebsocket';
+import { useChatReceived } from 'hooks/useChatReceived';
 import { getDistancefromCoords } from 'utils/distance';
 import { ICoords } from 'types';
 import { useRouter } from 'next/router';
@@ -30,6 +31,7 @@ function MapPage({ result }) {
 
     enterRoom(ROOM_ID as string);
   }, [ROOM_ID, isSocketConnected]);
+  useChatReceived(received);
 
   const getMarkerOptions = useCallback((type: string, position: any, _map = map) => {
     const { naver } = window;
