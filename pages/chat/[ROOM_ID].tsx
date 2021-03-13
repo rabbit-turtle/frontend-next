@@ -17,7 +17,7 @@ function Chat() {
   const [value, setValue] = useState<string>('');
   const router = useRouter();
   const { ROOM_ID } = router.query;
-  const chatPane = useRef(null);
+  const chatEndRef = useRef(null);
 
   const [getRoom, { data }] = useLazyQuery(GET_ROOM);
   const { enterRoom, sendMessage, received, isSocketConnected } = useWebsocket();
@@ -37,7 +37,7 @@ function Chat() {
   }, [ROOM_ID, isSocketConnected]);
 
   useEffect(() => {
-    chatPane.current?.scrollBy({ behavior: 'smooth', top: chatPane.current?.offsetHeight });
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [data]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
@@ -76,7 +76,7 @@ function Chat() {
         <title>채팅</title>
       </Head>
       <NavigationBar title={data?.room.title} />
-      <div className="h-5/6 overflow-auto bg-gray-100" ref={chatPane}>
+      <div className="h-5/6 overflow-auto bg-gray-100">
         {data?.room.chats.map(chat => (
           <Chatlog
             key={chat.id}
@@ -85,6 +85,7 @@ function Chat() {
             created_at={dayjs(chat.created_at).format('h:mm A')}
           />
         ))}
+        <div ref={chatEndRef} />
       </div>
       <form className="sticky bottom-3" onSubmit={handleSubmit}>
         <TextField

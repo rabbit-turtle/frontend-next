@@ -8,6 +8,8 @@ import Template from 'components/template';
 import theme from 'styles/theme';
 import { useApollo } from 'apollo/apolloClient';
 import 'styles/tailwind.css';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
 declare global {
   interface Window {
@@ -48,6 +50,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <Component {...pageProps} />
+            <ToastContainer />
           </ThemeProvider>
         </ApolloProvider>
       </Template>
