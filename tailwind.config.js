@@ -29,6 +29,14 @@ module.exports = {
           'op-5': 'rgba(0,0,0,0.5)',
           'op-7': 'rgba(0,0,0,0.7)',
         },
+        google: {
+          DEFAULT: '#ffffff',
+          dark: '#4285f4',
+        },
+        kakao: {
+          DEFAULT: '#FEE500',
+          dark: '#ffd900',
+        },
       },
       borderRadius: {
         50: '50%',

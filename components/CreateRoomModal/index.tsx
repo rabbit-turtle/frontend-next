@@ -8,6 +8,7 @@ import DaumPostcode from 'components/DaumPostcode';
 import { useNavermap } from 'hooks/useNavermap';
 import { ICoords } from 'types';
 import { CREATE_ROOM } from 'apollo/mutations';
+import { CreateRoomInput } from 'apollo/mutations/createRoom';
 
 interface ICreateRoomModal {
   setIsCreateModalOn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -34,6 +35,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
   const modalRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef(null);
   const [createRoom, { data, error }] = useMutation(CREATE_ROOM);
+  // const { createRoom } = useCreateRoom();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -51,8 +53,8 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
         createRoomData: {
           title,
           reserved_time,
-          location: JSON.stringify(location),
-        },
+          location,
+        } as CreateRoomInput,
       },
     });
   };
@@ -103,20 +105,23 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
     naver.maps.Service.geocode({ query: address }, (status: any, response: any) => {
       if (status !== naver.maps.Service.Status.OK) return console.log('something wrong!');
       const { x, y } = response.v2.addresses[0];
+      setLocation({ latitude: x, longitude: y });
       mapSetCenter(map, x, y);
       setMarkerPosition({ x, y });
     });
   }, [address]);
 
-  useEffect(() => {
-    if (!data) return;
-    console.log('created room', data);
+  console.log('data', data);
 
-    navigator.clipboard.writeText(`${window.location.origin}/invitation/test`).then(() => {
-      console.log('copy completed');
-    }, console.log);
-    setIsCreateModalOn(false);
-  }, [data]);
+  // useEffect(() => {
+  //   if (!data) return;
+  //   console.log('created room', data);
+
+  //   navigator.clipboard.writeText(`${window.location.origin}/invitation/test`).then(() => {
+  //     console.log('copy completed');
+  //   }, console.log);
+  //   setIsCreateModalOn(false);
+  // }, [data]);
 
   return (
     <div

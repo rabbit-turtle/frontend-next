@@ -5,6 +5,19 @@ export const CREATE_ROOM = gql`
     createRoom(createRoomData: $createRoomData) {
       id
       title
+      location
+      reserved_time
+      completed_time
+      roomStatus {
+        id
+        name
+      }
+      recentChat {
+        id
+        content
+        isSender
+        created_at
+      }
     }
   }
 `;
