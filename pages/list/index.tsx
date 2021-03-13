@@ -22,26 +22,28 @@ function RoomList() {
   }, [data, loading, isSocketConnected]);
 
   return (
-    <div className="relative h-screen transform divide-y-2">
-      {data?.rooms.map((room: IRoomLog) => (
-        <RoomLog
-          key={room.id}
-          roomStatus={room.roomStatus}
-          recentChat={room.recentChat}
-          id={room.id}
-        />
-      ))}
+    <>
+      <div className="h-screen transform divide-y-2">
+        {data?.rooms.map((room: IRoomLog) => (
+          <RoomLog
+            key={room.id}
+            roomStatus={room.roomStatus}
+            recentChat={room.recentChat}
+            id={room.id}
+          />
+        ))}
+      </div>
       {isCreateModalOn ? (
         <CreateRoomModal setIsCreateModalOn={setIsCreateModalOn} />
       ) : (
         <button
-          className="absolute right-3 bottom-3 bg-primary w-12 h-12 rounded-50 text-white focus:outline-none"
+          className="fixed right-3 bottom-3 bg-primary w-12 h-12 rounded-50 text-white focus:outline-none"
           onClick={() => setIsCreateModalOn(prev => !prev)}
         >
           +
         </button>
       )}
-    </div>
+    </>
   );
 }
 
