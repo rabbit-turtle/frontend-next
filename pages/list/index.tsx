@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import CreateRoomModal from 'components/CreateRoomModal';
+import dynamic from 'next/dynamic';
 import { useQuery } from '@apollo/client';
 import { GET_ROOMS } from 'apollo/queries';
 import RoomLog from 'components/RoomLog';
 import { IRoomLog } from 'types';
 import { useWebsocket } from 'hooks/useWebsocket';
 import { useChatReceived } from 'hooks/useChatReceived';
+// import CreateRoomModal from 'components/CreateRoomModal';
+const CreateRoomModal = dynamic(() => import('components/CreateRoomModal'));
 
 function RoomList() {
   const [isCreateModalOn, setIsCreateModalOn] = useState<boolean>(false);
