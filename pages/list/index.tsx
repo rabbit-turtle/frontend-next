@@ -15,8 +15,6 @@ function RoomList() {
   const { received, enterRoom, isSocketConnected } = useWebsocket();
   useChatReceived(received);
 
-  console.log(data, loading, error);
-
   useEffect(() => {
     if (loading || !data || !isSocketConnected) return;
 

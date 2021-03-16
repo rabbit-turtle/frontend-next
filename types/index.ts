@@ -22,4 +22,5 @@ export interface ICoords {
 export interface Iauth {
   token: string;
   isLogined: boolean;
+  userId: string;
 }

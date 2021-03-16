@@ -3,12 +3,12 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useLazyQuery, useReactiveVar } from '@apollo/client';
 import { GOOGLE_LOGIN } from 'apollo/queries';
-import { invitedRoomIdVar, authTokenVar } from 'apollo/store';
+import { invitedRoomIdVar, authVar } from 'apollo/store';
 
 function Login(props) {
   const _invitedRoomIdVar = useReactiveVar(invitedRoomIdVar);
-  const _authTokenVar = useReactiveVar(authTokenVar);
-  const [googleLogin, { called, loading, data: googleData }] = useLazyQuery(GOOGLE_LOGIN);
+  const _authVar = useReactiveVar(authVar);
+  const [googleLogin, { called, loading, data: googleData, error }] = useLazyQuery(GOOGLE_LOGIN);
   const router = useRouter();
 
   const handleKakaoLogin = () => {
@@ -23,8 +23,8 @@ function Login(props) {
 
   // google Login setting
   useEffect(() => {
-    const onSuccess = googleUser => {
-      const id_token: string = googleUser.getAuthResponse().id_token;
+    const onSuccess = async googleUser => {
+      const id_token: string = await googleUser.getAuthResponse().id_token;
       googleLogin({ variables: { google_token: id_token } });
     };
 
@@ -50,14 +50,18 @@ function Login(props) {
 
   useEffect(() => {
     if (!googleData) return;
-    console.log('google>>>', googleData);
+    const { token, id: userId } = googleData.loginByGoogle;
+    authVar({ token, isLogined: true, userId });
   }, [googleData]);
 
   useEffect(() => {
-    if (!_authTokenVar) return;
-    if (_invitedRoomIdVar) router.push(`/chat/${_invitedRoomIdVar}`);
-    else router.push(`/list`);
-  }, [_authTokenVar]);
+    if (!_authVar) return;
+    console.log('auth', _authVar);
+    if (_invitedRoomIdVar) {
+      invitedRoomIdVar('');
+      router.push(`/chat/${_invitedRoomIdVar}`);
+    } else router.push(`/list`);
+  }, [_authVar]);
 
   return (
     <section className="flex flex-col items-center">

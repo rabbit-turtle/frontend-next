@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { ApolloClient, HttpLink, InMemoryCache, NormalizedCacheObject } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
+import { authVar } from 'apollo/store';
 
 let apolloClient;
 let token: string;
@@ -11,7 +12,8 @@ const authLink = setContext((_, { headers }) => {
     //   .split('; ')
     //   .find(row => row.startsWith('token'))
     //   .split('=')[1];
-    token = process.env.NEXT_PUBLIC_TMP_TOKEN; // 임시 토큰
+    // token = process.env.NEXT_PUBLIC_TMP_TOKEN; // 임시 토큰
+    token = authVar()?.token;
   }
   if (headers) token = headers.token;
   return {

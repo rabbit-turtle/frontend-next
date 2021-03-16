@@ -18,7 +18,7 @@ export const useAuth = () => {
 
   const onLogout = () => {
     router.push(`/login`);
-    authVar({ token: '', isLogined: false });
+    authVar({ token: '', isLogined: false, userId: '' });
     clearInterval(prevIntervalId);
   };
 
