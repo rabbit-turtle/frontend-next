@@ -18,7 +18,7 @@ export const useAuth = () => {
 
   const onLogout = () => {
     router.push(`/login`);
-    authVar({ token: '', isLogined: false });
+    authVar(null);
     clearInterval(prevIntervalId);
   };
 
@@ -36,4 +36,11 @@ export const useAuth = () => {
       setPrevIntervalId(newIntervalId);
     }, 2000); //data에서 뽑은 token의 만료시간 - 2분 뭐 이런식으로...
   }, [data]);
+
+  useEffect(() => {
+    if (!_authVar) {
+      router.push('/login');
+      return;
+    }
+  }, [_authVar]);
 };
