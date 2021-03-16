@@ -11,9 +11,11 @@ const CreateRoomModal = dynamic(() => import('components/CreateRoomModal'));
 
 function RoomList() {
   const [isCreateModalOn, setIsCreateModalOn] = useState<boolean>(false);
-  const { data, loading } = useQuery(GET_ROOMS);
+  const { data, loading, error } = useQuery(GET_ROOMS);
   const { received, enterRoom, isSocketConnected } = useWebsocket();
   useChatReceived(received);
+
+  console.log(data, loading, error);
 
   useEffect(() => {
     if (loading || !data || !isSocketConnected) return;
@@ -31,6 +33,9 @@ function RoomList() {
             key={room.id}
             roomStatus={room.roomStatus}
             recentChat={room.recentChat}
+            lastViewedChat={room.lastViewedChat}
+            title={room.title}
+            location={room.location}
             id={room.id}
           />
         ))}

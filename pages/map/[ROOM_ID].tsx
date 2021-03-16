@@ -9,6 +9,7 @@ import { getDistancefromCoords } from 'utils/distance';
 import { ICoords } from 'types';
 import { useRouter } from 'next/router';
 import { GET_ROOM } from 'apollo/queries';
+import { SOCKET_MESSAGE_TYPE } from 'constants/index';
 const Map = dynamic(() => import('components/Map'));
 
 enum AnimalType {
@@ -158,7 +159,7 @@ function MapPage({ result }) {
   useEffect(() => {
     if (!received || !map || minuteLeft > 60) return;
     const { message, messageType } = JSON.parse(received);
-    if (messageType !== 'location') return;
+    if (messageType !== SOCKET_MESSAGE_TYPE.map) return;
     const { naver } = window as any;
     const { latitude, longitude } = message;
     console.log('received', latitude, longitude);

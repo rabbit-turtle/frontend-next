@@ -18,7 +18,10 @@ export const GET_ROOMS = gql`
     rooms {
       id
       title
-      location
+      location {
+        latitude
+        longitude
+      }
       reserved_time
       completed_time
       roomStatus {
@@ -26,6 +29,12 @@ export const GET_ROOMS = gql`
         name
       }
       recentChat {
+        id
+        content
+        isSender
+        created_at
+      }
+      lastViewedChat {
         id
         content
         isSender
@@ -40,7 +49,10 @@ export const GET_ROOM = gql`
     room(room_id: $room_id) {
       id
       title
-      location
+      location {
+        latitude
+        longitude
+      }
       reserved_time
       completed_time
       roomStatus {
@@ -48,6 +60,12 @@ export const GET_ROOM = gql`
         name
       }
       recentChat {
+        id
+        content
+        isSender
+        created_at
+      }
+      lastViewedChat {
         id
         content
         isSender

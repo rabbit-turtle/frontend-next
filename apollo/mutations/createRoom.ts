@@ -7,7 +7,10 @@ export const CREATE_ROOM = gql`
     createRoom(createRoomData: $createRoomData) {
       id
       title
-      location
+      location {
+        latitude
+        longitude
+      }
       reserved_time
       completed_time
       roomStatus {
@@ -35,7 +38,7 @@ export const useCreateRoom = () => {
     update(cache, { data }) {
       const existingRooms = cache.readQuery({
         query: GET_ROOMS,
-      }) as { rooms: any[] }; // 사실은 ROOM[]인데...눈물
+      }) as { rooms: any[] }; // 사실은 ROOM[]인데...눈물 | 롬곡...
 
       cache.writeQuery({
         query: GET_ROOMS,
