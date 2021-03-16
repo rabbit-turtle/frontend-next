@@ -1,13 +1,16 @@
-import { ICoords } from 'types';
 import { gql, useMutation } from '@apollo/client';
 import { GET_ROOMS } from 'apollo/queries/index';
+import { ICoords } from 'types';
 
 export const CREATE_ROOM = gql`
   mutation CreateRoom($createRoomData: CreateRoomInput!) {
     createRoom(createRoomData: $createRoomData) {
       id
       title
-      location
+      location {
+        latitude
+        longitude
+      }
       reserved_time
       completed_time
       roomStatus {

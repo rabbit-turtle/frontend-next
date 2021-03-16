@@ -7,11 +7,11 @@ let token: string;
 
 const authLink = setContext((_, { headers }) => {
   if (typeof window !== 'undefined') {
-    const tokenValue = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('token'))
-      .split('=')[1];
-    token = tokenValue;
+    // const tokenValue = document.cookie
+    //   .split('; ')
+    //   .find(row => row.startsWith('token'))
+    //   .split('=')[1];
+    token = process.env.NEXT_PUBLIC_TMP_TOKEN; // 임시 토큰
   }
   if (headers) token = headers.token;
   return {

@@ -1,12 +1,14 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
+import { useQuery } from '@apollo/client';
 import { useNavermap } from 'hooks/useNavermap';
 import { useWebsocket } from 'hooks/useWebsocket';
 import { useChatReceived } from 'hooks/useChatReceived';
 import { getDistancefromCoords } from 'utils/distance';
 import { ICoords } from 'types';
 import { useRouter } from 'next/router';
+import { GET_ROOM } from 'apollo/queries';
 import { SOCKET_MESSAGE_TYPE } from 'constants/index';
 const Map = dynamic(() => import('components/Map'));
 
@@ -22,10 +24,13 @@ function MapPage({ result }) {
   const [minuteLeft, setMinuteLeft] = useState<number>(result.minuteLeft);
   const { map, loading } = useNavermap();
   const router = useRouter();
-  const { ROOM_ID } = router.query;
   const { enterRoom, sendMessage, isSocketConnected, received } = useWebsocket();
   const rabbitMarker = useRef(null);
   const turtleMarker = useRef(null);
+  // const watchIdRef = useRef<number>(null);
+  const { ROOM_ID } = router.query;
+
+  // const { data } = useQuery(GET_ROOM, { variables: { room_id: ROOM_ID } }); //waiting for graphql server...
 
   useEffect(() => {
     if (!ROOM_ID || !isSocketConnected) return;
@@ -144,6 +149,8 @@ function MapPage({ result }) {
       position: new naver.maps.LatLng(result.lat, result.lng),
       map: map,
     });
+
+    console.log('useEffect watchId>>', watchId);
 
     return () => navigator.geolocation.clearWatch(watchId);
   }, [map, isSocketConnected]);

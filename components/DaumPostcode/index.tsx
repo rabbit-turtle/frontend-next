@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 
 interface IDaumPostcode {
   onComplete: (_address: string) => void;
@@ -15,7 +15,6 @@ function DaumPostcode({ onComplete, onClose }: IDaumPostcode) {
         width: '100%',
         height: '100%',
         oncomplete: (data: any) => {
-          // console.log(data);
           onComplete(data.address);
         },
       }).embed(containerRef.current);
@@ -40,4 +39,4 @@ function DaumPostcode({ onComplete, onClose }: IDaumPostcode) {
   );
 }
 
-export default DaumPostcode;
+export default memo(DaumPostcode);

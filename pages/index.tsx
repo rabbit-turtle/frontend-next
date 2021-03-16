@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useWebsocket } from 'hooks/useWebsocket';
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -7,7 +7,9 @@ export default function Home() {
       <Head>
         <title>토끼와 거북이</title>
       </Head>
-      <div>안뇽</div>
+      <Link href={`/list`}>
+        <a>안뇽</a>
+      </Link>
     </>
   );
 }

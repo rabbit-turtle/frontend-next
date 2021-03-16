@@ -1,4 +1,5 @@
 import { gql } from '@apollo/client';
+import { ICoords } from 'types/index';
 
 export const CREATE_ROOM = gql`
   mutation CreateRoom($createRoomData: CreateRoomInput!) {
@@ -37,4 +38,10 @@ export interface CreateChatInput {
   room_id: string;
   content: string;
   created_at: Date;
+}
+
+export interface CreateRoomInput {
+  title: string;
+  reserved_time?: string;
+  location?: ICoords;
 }

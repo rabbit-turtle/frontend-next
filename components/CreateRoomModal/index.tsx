@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import Input from '@material-ui/core/Input';
 import { toast } from 'react-toastify';
-import Skeleton from 'components/Skeleton';
-import DaumPostcode from 'components/DaumPostcode';
 import { useNavermap } from 'hooks/useNavermap';
 import { CreateRoomInput, useCreateRoom } from 'apollo/mutations/createRoom';
 import { ICoords } from 'types';
+const DaumPostcode = dynamic(() => import('components/DaumPostcode'));
+// import DaumPostcode from 'components/DaumPostcode';
+const Skeleton = dynamic(() => import('components/Skeleton'));
 
 interface ICreateRoomModal {
   setIsCreateModalOn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -23,9 +25,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
   const [location, setLocation] = useState<ICoords>();
   const [inputData, setInputData] = useState<IinputData>({
     title: '',
-    reserved_time: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
-      .toISOString()
-      .slice(0, 16),
+    reserved_time: '',
     title_valid: true,
   });
   const [isDaumPostcodeOn, setIsDaumPostcodeOn] = useState<boolean>(false);
@@ -47,8 +47,8 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
     if (!title) return;
     const queryObj = { title, reserved_time, location };
     const createRoomData = Object.keys(queryObj).reduce((acc, key, idx) => {
-      if (idx !== 2) return queryObj[key] ? { ...acc, [key]: queryObj[key] } : acc;
-      return queryObj[key] ? { ...acc, [key]: JSON.stringify(queryObj[key]) } : acc;
+      // if (idx !== 2) return queryObj[key] ? { ...acc, [key]: queryObj[key] } : acc;
+      return queryObj[key] ? { ...acc, [key]: queryObj[key] } : acc;
     }, {});
 
     console.log('createRoomd', createRoomData);
