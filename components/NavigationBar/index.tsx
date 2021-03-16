@@ -3,27 +3,39 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Typography from '@material-ui/core/Typography';
 import { ROUTES } from 'constants/index';
-import { ArrowBackIosRounded } from '@material-ui/icons';
+import { ChevronBackOutline } from 'react-ionicons';
+import { CreateOutline } from 'react-ionicons';
 
-function NavigationBar({ title }: { title: string }) {
+interface NavProps {
+  title: string;
+  setIsCreateModalOn?: (isModalOn: boolean) => void;
+}
+
+function NavigationBar({ title, setIsCreateModalOn }: NavProps) {
   const router = useRouter();
   const [mode, setMode] = useState<string>(router.pathname.startsWith(ROUTES.map) ? 'map' : 'chat');
 
+  const linkToPage = () => {
+    mode === 'map' ? router.back() : router.push('/list');
+  };
+
   return (
-    <nav className="flex items-center justify-between py-3 px-7">
-      <span className="cursor-pointer">
-        <ArrowBackIosRounded fontSize="small" onClick={() => router.push('/list')} />
-      </span>
+    <nav
+      className={`flex items-center ${
+        router.pathname === '/list' ? 'justify-center' : 'justify-between'
+      } py-3 px-7 bg-white z-100`}
+    >
+      {router.pathname !== '/list' && (
+        <span className="cursor-pointer" onClick={linkToPage}>
+          <ChevronBackOutline color={'#00000'} height="27px" width="27px" />
+        </span>
+      )}
       <Typography variant="h6">{title}</Typography>
-      <Link
-        href={
-          mode === 'map'
-            ? `${ROUTES.chat}/${router.query.ROOM_ID}`
-            : `${ROUTES.map}/${router.query.ROOM_ID}`
-        }
-      >
-        <a className="text-primary-dark">{mode === 'map' ? 'chat' : 'map'}</a>
-      </Link>
+      {router.pathname !== '/list' && (
+        <span className="cursor-pointer" onClick={() => setIsCreateModalOn(true)}>
+          <CreateOutline color={'#00000'} height="25px" width="25px" />
+        </span>
+      )}
     </nav>
   );
 }
