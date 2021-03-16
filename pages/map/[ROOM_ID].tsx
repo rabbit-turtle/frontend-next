@@ -29,7 +29,7 @@ function MapPage({ result }) {
   // const watchIdRef = useRef<number>(null);
   const { ROOM_ID } = router.query;
 
-  const { data } = useQuery(GET_ROOM, { variables: { room_id: ROOM_ID } }); //waiting for graphql server...
+  // const { data } = useQuery(GET_ROOM, { variables: { room_id: ROOM_ID } }); //waiting for graphql server...
 
   useEffect(() => {
     if (!ROOM_ID || !isSocketConnected) return;

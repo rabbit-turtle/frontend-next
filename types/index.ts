@@ -15,3 +15,8 @@ export interface ICoords {
   latitude: number;
   longitude: number;
 }
+
+export interface Iauth {
+  token: string;
+  isLogined: boolean;
+}
