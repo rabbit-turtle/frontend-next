@@ -4,12 +4,14 @@ import { useRouter } from 'next/router';
 import { useLazyQuery, useReactiveVar } from '@apollo/client';
 import { GOOGLE_LOGIN } from 'apollo/queries';
 import { invitedRoomIdVar, authVar } from 'apollo/store';
+import { useSaveReceiver } from 'apollo/mutations/saveReceiver';
 
 function Login(props) {
   const _invitedRoomIdVar = useReactiveVar(invitedRoomIdVar);
   const _authVar = useReactiveVar(authVar);
   const [googleLogin, { called, loading, data: googleData, error }] = useLazyQuery(GOOGLE_LOGIN);
   const router = useRouter();
+  const { saveReceiver } = useSaveReceiver();
 
   const handleKakaoLogin = () => {
     const { Kakao } = window;
@@ -45,7 +47,10 @@ function Login(props) {
       if (Kakao.isInitialized()) return;
       Kakao.init(process.env.NEXT_PUBLIC_KAKAO_JS_KEY);
     };
-    window.onload = initGoogleKakao;
+
+    setTimeout(() => {
+      initGoogleKakao();
+    }, 100);
   }, []);
 
   useEffect(() => {
@@ -55,9 +60,13 @@ function Login(props) {
   }, [googleData]);
 
   useEffect(() => {
-    if (!_authVar) return;
-    console.log('auth', _authVar);
+    if (!_authVar || !_authVar.token) return;
     if (_invitedRoomIdVar) {
+      saveReceiver({
+        variables: {
+          room_id: _invitedRoomIdVar,
+        },
+      });
       invitedRoomIdVar('');
       router.push(`/chat/${_invitedRoomIdVar}`);
     } else router.push(`/list`);
