@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
-import { useQuery } from '@apollo/client';
+import { useLazyQuery } from '@apollo/client';
 import { useNavermap } from 'hooks/useNavermap';
 import { useWebsocket } from 'hooks/useWebsocket';
 import { useChatReceived } from 'hooks/useChatReceived';
@@ -17,11 +17,11 @@ enum AnimalType {
   turtle = 'turtle',
 }
 
-function MapPage({ result }) {
+function MapPage() {
   const [currentLocation, setCurrentLocation] = useState<ICoords>();
   const [isBothConnected, setIsBothConnected] = useState<boolean>(false);
   const [distanceProgress, setDistanceProgress] = useState<[number, number]>([0, 100]);
-  const [minuteLeft, setMinuteLeft] = useState<number>(result.minuteLeft);
+  const [minuteLeft, setMinuteLeft] = useState<number>(123);
   const { map, loading } = useNavermap();
   const router = useRouter();
   const { enterRoom, sendMessage, isSocketConnected, received } = useWebsocket();
@@ -30,7 +30,25 @@ function MapPage({ result }) {
   // const watchIdRef = useRef<number>(null);
   const { ROOM_ID } = router.query;
 
-  // const { data } = useQuery(GET_ROOM, { variables: { room_id: ROOM_ID } }); //waiting for graphql server...
+  const [getRoom, { data }] = useLazyQuery(GET_ROOM); //waiting for graphql server...
+
+  useEffect(() => {
+    if (!ROOM_ID) return;
+    getRoom({
+      variables: {
+        room_id: ROOM_ID,
+      },
+    });
+  }, []);
+
+  useEffect(() => {
+    console.log('room', data);
+    console.log(new Date(data.room.reserved_time).valueOf() - new Date().valueOf());
+    console.log(data.room.reserved_time, new Date().toISOString());
+    console.log(new Date(data.room.reserved_time), new Date().toISOString());
+    const msdif = new Date(data.room.reserved_time).valueOf() - new Date().valueOf();
+    console.log(Math.floor(msdif / 1000 / 60));
+  }, [data]);
 
   useEffect(() => {
     if (!ROOM_ID || !isSocketConnected) return;
@@ -191,7 +209,7 @@ function MapPage({ result }) {
   return (
     <Map
       loading={loading}
-      title={result.title}
+      title={data?.room?.title}
       minuteLeft={minuteLeft}
       currentLocation={currentLocation}
       received={received}
@@ -199,23 +217,5 @@ function MapPage({ result }) {
     />
   );
 }
-
-export const getServerSideProps: GetServerSideProps = async ({
-  query,
-}: GetServerSidePropsContext) => {
-  const dif = Math.floor((new Date('2021-03-09 20:30:00').valueOf() - Date.now()) / 1000 / 60);
-
-  //
-  return {
-    props: {
-      result: {
-        lat: 37.3662778,
-        lng: 127.1081222,
-        title: '아이패드 에어',
-        minuteLeft: dif,
-      },
-    },
-  };
-};
 
 export default MapPage;

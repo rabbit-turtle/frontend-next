@@ -12,19 +12,20 @@ const SILENT_REFRESH = gql`
 
 export const useAuth = () => {
   const [prevIntervalId, setPrevIntervalId] = useState<NodeJS.Timeout>(null);
-  const { data, refetch } = useQuery(SILENT_REFRESH);
+  const { data, refetch, error } = useQuery(SILENT_REFRESH);
   const _authVar = useReactiveVar(authVar);
   const router = useRouter();
 
   const onLogout = () => {
     router.push(`/login`);
-    authVar(null);
+    authVar({ token: '', isLogined: false, userId: '' });
     clearInterval(prevIntervalId);
   };
 
   useEffect(() => {
-    if (!data) {
+    if (!data || error) {
       // refresh 했는데 토큰이 없는경우
+      console.log(error);
       onLogout();
       return;
     }

@@ -10,37 +10,26 @@ import NavigationBar from 'components/NavigationBar';
 function Invitation({ isLogined }: { isLogined: boolean }) {
   const router = useRouter();
   const _authVar = useReactiveVar(authVar);
+  const { ROOM_ID } = router.query;
 
-  const { saveReceiver } = useSaveReceiver();
-  // useEffect(() => {
-  //   const { ROOM_ID } = router.query;
-  //   invitedRoomIdVar(ROOM_ID as string);
-  //   if (isLogined) router.push(`/chat/${ROOM_ID}`);
-  //   else router.push('/login');
-  // }, []);
-
-  //실제로는 useAuth hook에서 authVar를 세팅해줄것임
-  useEffect(() => {
-    authVar({ token: 'hello', isLogined: true, userId: 'mengkki' });
-  }, []);
+  const { saveReceiver, error } = useSaveReceiver();
 
   useEffect(() => {
-    if (!_authVar) return;
-    const { ROOM_ID: room_id } = router.query;
-    if (_authVar.token) {
-      saveReceiver({
-        variables: {
-          room_id,
-        },
-      });
-      router.push(`/chat/${room_id}`);
+    if (!ROOM_ID) return; //나중에 useAuth 활성화하고나면 풀것
+    if (!_authVar?.token) {
+      invitedRoomIdVar(ROOM_ID as string);
+      router.push('/login');
       return;
     }
-    invitedRoomIdVar(room_id as string);
-    router.push('/login');
-  }, [_authVar]);
+    saveReceiver({
+      variables: {
+        room_id: ROOM_ID,
+      },
+    });
+    router.push(`/chat/${ROOM_ID}`);
+  }, [_authVar, ROOM_ID]);
 
-  if (!_authVar || !_authVar.token)
+  if (!_authVar || !_authVar?.token)
     return (
       <div className="h-screen">
         <Skeleton />
@@ -55,15 +44,5 @@ function Invitation({ isLogined }: { isLogined: boolean }) {
     </main>
   );
 }
-
-export const getServerSideProps: GetServerSideProps = async context => {
-  const isLogined = context.req.cookies.token ? true : false;
-
-  return {
-    props: {
-      isLogined: false,
-    },
-  };
-};
 
 export default Invitation;
