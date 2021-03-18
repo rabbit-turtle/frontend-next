@@ -61,6 +61,7 @@ function Login(props) {
 
   useEffect(() => {
     if (!_authVar || !_authVar.token) return;
+    console.log('invited room id', _invitedRoomIdVar);
     if (_invitedRoomIdVar) {
       saveReceiver({
         variables: {
