@@ -5,6 +5,9 @@ export interface IRoomLog {
   lastViewedChat: IChatlog | null;
   location: string;
   title: string;
+  myId: string;
+  receiver: { id: string; name: string };
+  inviter: { id: string; name: string };
 }
 
 export interface IChatlog {
@@ -23,4 +26,5 @@ export interface Iauth {
   token: string;
   isLogined: boolean;
   userId: string;
+  name: string;
 }

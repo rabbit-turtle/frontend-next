@@ -18,6 +18,14 @@ export const GET_ROOMS = gql`
     rooms {
       id
       title
+      receiver {
+        id
+        name
+      }
+      inviter {
+        id
+        name
+      }
       location {
         latitude
         longitude
@@ -49,6 +57,14 @@ export const GET_ROOM = gql`
     room(room_id: $room_id) {
       id
       title
+      receiver {
+        id
+        name
+      }
+      inviter {
+        id
+        name
+      }
       location {
         latitude
         longitude

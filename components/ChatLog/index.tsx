@@ -7,7 +7,7 @@ function Chatlog({ isSender, content, created_at }: IChatlog) {
   return (
     <div
       className={`flex ${isSender ? 'justify-end' : 'justify-start'}
-      items-end my-2 mx-3`}
+      items-end py-2 px-3`}
     >
       {isSender && Time}
       {!isSender && <Image src="/images/turtle.png" alt="turtle profile" width={30} height={30} />}

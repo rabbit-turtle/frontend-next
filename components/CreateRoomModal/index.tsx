@@ -79,7 +79,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
       naver.maps.Service.geocode({ query: _address }, (status: any, response: any) => {
         if (status !== naver.maps.Service.Status.OK) return console.log('something wrong!');
         const { x, y } = response.v2.addresses[0];
-        setLocation({ latitude: x, longitude: y });
+        setLocation({ latitude: Number(x), longitude: Number(y) });
         setMarkerPosition({ x, y });
         mapSetCenter(map, x, y);
       });

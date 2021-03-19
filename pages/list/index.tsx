@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { useQuery } from '@apollo/client';
-import { GET_ROOMS } from 'apollo/queries';
+import { useQuery, useReactiveVar } from '@apollo/client';
+import { GET_ROOMS, GET_ROOM } from 'apollo/queries';
+import { authVar } from 'apollo/store';
 import RoomLog from 'components/RoomLog';
 import { IRoomLog } from 'types';
 import { useWebsocket } from 'hooks/useWebsocket';
 import { useChatReceived } from 'hooks/useChatReceived';
-// import CreateRoomModal from 'components/CreateRoomModal';
+import NavigationBar from 'components/NavigationBar';
 const CreateRoomModal = dynamic(() => import('components/CreateRoomModal'));
 
 function RoomList() {
@@ -14,6 +15,7 @@ function RoomList() {
   const { data, loading, error } = useQuery(GET_ROOMS);
   const { received, enterRoom, isSocketConnected } = useWebsocket();
   useChatReceived(received);
+  const _authVar = useReactiveVar(authVar);
 
   useEffect(() => {
     if (loading || !data || !isSocketConnected) return;
@@ -26,6 +28,7 @@ function RoomList() {
   return (
     <>
       <div className="h-screen transform divide-y-2">
+        <NavigationBar title={'채팅'} />
         {data?.rooms.map((room: IRoomLog) => (
           <RoomLog
             key={room.id}
@@ -35,6 +38,9 @@ function RoomList() {
             title={room.title}
             location={room.location}
             id={room.id}
+            myId={_authVar.userId}
+            receiver={room.receiver}
+            inviter={room.inviter}
           />
         ))}
       </div>
@@ -42,7 +48,7 @@ function RoomList() {
         <CreateRoomModal setIsCreateModalOn={setIsCreateModalOn} />
       ) : (
         <button
-          className="fixed right-3 bottom-3 bg-primary w-12 h-12 rounded-50 text-white focus:outline-none"
+          className="fixed right-3 2xl:right-400 bottom-3 bg-primary w-12 h-12 rounded-50 text-white hover:bg-primary-dark focus:outline-none"
           onClick={() => setIsCreateModalOn(prev => !prev)}
         >
           +

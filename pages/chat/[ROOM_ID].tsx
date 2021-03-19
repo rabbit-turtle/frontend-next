@@ -1,23 +1,30 @@
 import React, { useEffect, useState, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import Head from 'next/head';
-import TextField from '@material-ui/core/TextField';
-import Chatlog from 'components/ChatLog';
-import { useWebsocket } from 'hooks/useWebsocket';
 import { useRouter } from 'next/router';
-import dayjs from 'dayjs';
-import NavigationBar from 'components/NavigationBar';
-import { useLazyQuery } from '@apollo/client';
+import { authVar } from 'apollo/store';
 import { GET_ROOM } from 'apollo/queries';
-import { v4 as uuidv4 } from 'uuid';
-import { useChatReceived } from 'hooks/useChatReceived';
 import { useCreateChat, CreateChatInput } from 'apollo/mutations/createChat';
 import {
   useSaveLastViewedChat,
   SaveLastViewedChatInput,
 } from 'apollo/mutations/saveLastViewedChat';
+import { useLazyQuery, useReactiveVar } from '@apollo/client';
+import { v4 as uuidv4 } from 'uuid';
+import dayjs from 'dayjs';
+import styled, { css } from 'styled-components';
+import Chatlog from 'components/ChatLog';
+import NavigationBar from 'components/NavigationBar';
+import MapNavigationBar from 'components/MapNavigationBar';
+import { useWebsocket } from 'hooks/useWebsocket';
+import { useChatReceived } from 'hooks/useChatReceived';
+import { Send } from 'react-ionicons';
+
+const CreateRoomModal = dynamic(() => import('components/CreateRoomModal'));
 
 function Chat() {
   const [value, setValue] = useState<string>('');
+  const [isCreateModalOn, setIsCreateModalOn] = useState<boolean>(false);
   const chatEndRef = useRef(null);
   const router = useRouter();
   const { ROOM_ID } = router.query;
@@ -28,6 +35,8 @@ function Chat() {
   useChatReceived(received);
   const { createChat } = useCreateChat(ROOM_ID as string);
   const { saveLastViewedChat } = useSaveLastViewedChat(ROOM_ID as string);
+
+  const _authVar = useReactiveVar(authVar);
 
   useEffect(() => {
     if (!ROOM_ID) return;
@@ -91,12 +100,22 @@ function Chat() {
   };
 
   return (
-    <div className="relative px-6 h-screen">
+    <div className="relative">
       <Head>
         <title>채팅</title>
       </Head>
-      <NavigationBar title={data?.room.title} />
-      <div className="h-5/6 overflow-auto bg-gray-100">
+      <div className="sticky -top-0 overflow-hidden">
+        <NavigationBar
+          title={
+            data?.room.inviter?.id !== _authVar.userId
+              ? data?.room.inviter?.name
+              : data?.room.receiver?.name
+          }
+          setIsCreateModalOn={setIsCreateModalOn}
+        />
+        <MapNavigationBar title={data?.room.title} />
+      </div>
+      <ChatLogWrapper data={data}>
         {data?.room.chats.map(chat => (
           <Chatlog
             key={chat.id}
@@ -106,18 +125,58 @@ function Chat() {
           />
         ))}
         <div ref={chatEndRef} />
-      </div>
-      <form className="sticky bottom-3" onSubmit={handleSubmit}>
-        <TextField
-          fullWidth
-          placeholder="채팅 해 보세요🥕"
-          variant="filled"
-          onChange={handleChange}
-          value={value}
-        />
+      </ChatLogWrapper>
+      <form
+        className="fixed bottom-0 w-full 2xl:w-512 py-1 flex items-center justify-between bg-gray-100 border-t border-gray-300"
+        onSubmit={handleSubmit}
+      >
+        <MessageInput placeholder="채팅해 보세요🥕" onChange={handleChange} value={value} />
+        <span className={`absolute right-2 cursor-pointer ${value ? 'opacity-100' : 'opacity-40'}`}>
+          <Send color={'#ef9a9a'} height="25px" width="25px" />
+        </span>
       </form>
+      {isCreateModalOn && <CreateRoomModal setIsCreateModalOn={setIsCreateModalOn} />}
     </div>
   );
 }
 
 export default Chat;
+
+const ChatLogWrapper = styled.div`
+  ${props =>
+    !props.data ||
+    (props.data?.room.chats.length < 10 &&
+      css`
+        @media (max-height: 700px) {
+          height: 450px;
+        }
+        @media (min-height: 700px) {
+          height: 570px;
+        }
+        @media (min-height: 900px) {
+          height: 760px;
+        }
+      `)}
+
+  background-color: rgba(131, 124, 124, 0.1);
+  padding-bottom: 60px;
+`;
+
+const MessageInput = styled.input`
+  margin: 5px 0 5px 5px;
+  width: 85%;
+  height: 35px;
+  outline: none;
+  border-radius: 40px;
+  text-indent: 15px;
+  border: 1px solid rgba(131, 124, 124, 0.4);
+  background-color: white;
+
+  ::placeholder {
+    font-size: 16px;
+  }
+
+  &:focus {
+    border: 1px solid #ef9a9a;
+  }
+`;
