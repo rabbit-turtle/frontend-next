@@ -85,8 +85,6 @@ function Login() {
     logout();
   };
 
-  console.log('logout', logoutData, logoutError);
-
   return (
     <section className="h-screen flex flex-col justify-center items-center">
       <p className="my-6 text-2xl font-semibold leading-relaxed mb-10">
