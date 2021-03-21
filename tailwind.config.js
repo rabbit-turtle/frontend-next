@@ -66,6 +66,13 @@ module.exports = {
       maxWidth: {
         '2/3': '66%',
       },
+      spacing: {
+        512: '32rem',
+        400: '25rem',
+      },
+    },
+    screen: {
+      desktop: '1280px',
     },
   },
   variants: {

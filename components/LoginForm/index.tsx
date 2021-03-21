@@ -55,8 +55,8 @@ function Login(props) {
 
   useEffect(() => {
     if (!googleData) return;
-    const { token, id: userId } = googleData.loginByGoogle;
-    authVar({ token, isLogined: true, userId });
+    const { token, id: userId, name } = googleData.loginByGoogle;
+    authVar({ token, isLogined: true, userId, name });
   }, [googleData]);
 
   useEffect(() => {
@@ -74,7 +74,7 @@ function Login(props) {
   }, [_authVar]);
 
   return (
-    <section className="flex flex-col items-center">
+    <section className="h-screen flex flex-col justify-center items-center">
       <p className="my-6 text-2xl font-semibold leading-relaxed mb-10">
         토끼랑 거북이랑
         <br />
