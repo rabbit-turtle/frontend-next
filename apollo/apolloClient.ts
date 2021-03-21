@@ -13,7 +13,7 @@ const authLink = setContext((_, { headers }) => {
     //   .find(row => row.startsWith('token'))
     //   .split('=')[1];
     // token = process.env.PUBLIC_RABBIT_TOKEN; // 임시 토큰
-    token = authVar()?.token;
+    token = authVar()?.access_token;
   }
   if (headers) token = headers.token;
   return {
@@ -30,6 +30,7 @@ const createApolloClient = () => {
     link: authLink.concat(
       new HttpLink({
         uri: process.env.NEXT_PUBLIC_GRAPHQL_SERVER,
+        credentials: 'include',
       }),
     ),
     cache: new InMemoryCache(),

@@ -6,6 +6,7 @@ import { ApolloProvider } from '@apollo/client';
 import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Template from 'components/template';
+import AuthProvider from 'components/AuthProvider';
 import theme from 'styles/theme';
 import { useApollo } from 'apollo/apolloClient';
 import 'styles/tailwind.css';
@@ -50,7 +51,9 @@ function MyApp({ Component, pageProps }: AppProps) {
         <ApolloProvider client={apolloClient}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            <Component {...pageProps} />
+            <AuthProvider>
+              <Component {...pageProps} />
+            </AuthProvider>
             <ToastContainer newestOnTop />
           </ThemeProvider>
         </ApolloProvider>

@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import { useLazyQuery } from '@apollo/client';
 import { useNavermap } from 'hooks/useNavermap';
 import { useWebsocket } from 'hooks/useWebsocket';
@@ -10,6 +9,9 @@ import { ICoords } from 'types';
 import { useRouter } from 'next/router';
 import { GET_ROOM } from 'apollo/queries';
 import { SOCKET_MESSAGE_TYPE } from 'constants/index';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import relativeTime from 'dayjs/plugin/relativeTime';
 const Map = dynamic(() => import('components/Map'));
 
 enum AnimalType {
@@ -27,28 +29,10 @@ function MapPage() {
   const { enterRoom, sendMessage, isSocketConnected, received } = useWebsocket();
   const rabbitMarker = useRef(null);
   const turtleMarker = useRef(null);
-  // const watchIdRef = useRef<number>(null);
+  const watchIdRef = useRef<number>(null);
   const { ROOM_ID } = router.query;
 
   const [getRoom, { data }] = useLazyQuery(GET_ROOM); //waiting for graphql server...
-
-  useEffect(() => {
-    if (!ROOM_ID) return;
-    getRoom({
-      variables: {
-        room_id: ROOM_ID,
-      },
-    });
-  }, []);
-
-  useEffect(() => {
-    console.log('room', data);
-    console.log(new Date(data.room.reserved_time).valueOf() - new Date().valueOf());
-    console.log(data.room.reserved_time, new Date().toISOString());
-    console.log(new Date(data.room.reserved_time), new Date().toISOString());
-    const msdif = new Date(data.room.reserved_time).valueOf() - new Date().valueOf();
-    console.log(Math.floor(msdif / 1000 / 60));
-  }, [data]);
 
   useEffect(() => {
     if (!ROOM_ID || !isSocketConnected) return;
@@ -71,7 +55,12 @@ function MapPage() {
   }, []);
 
   const getDistanceProgress = (type: string, lat: number, lng: number) => {
-    const distance = getDistancefromCoords(lat, lng, result.lat, result.lng);
+    const distance = getDistancefromCoords(
+      lat,
+      lng,
+      data.room.location.latitude,
+      data.room.location.longitude,
+    );
     const _distance = distance > 1 ? 1 : distance;
     console.log(type, distance);
     if (type === 'rabbit') {
@@ -90,7 +79,10 @@ function MapPage() {
 
   const fitBoundsMap = (_map: any, ...naverpoints: any[]) => {
     const { naver } = window;
-    const destPoint = getNaverLatLng({ latitude: result.lat, longitude: result.lng }).toPoint();
+    const destPoint = getNaverLatLng({
+      latitude: data.room.location.latitude,
+      longitude: data.room.location.longitude,
+    }).toPoint();
     let minx = 999,
       miny = 999,
       maxx = 0,
@@ -140,15 +132,26 @@ function MapPage() {
   };
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      setMinuteLeft(min => min - 1);
-    }, 60000);
-
-    return () => clearInterval(intervalId);
+    getRoom({
+      variables: {
+        room_id: ROOM_ID,
+      },
+    });
+    return () => navigator.geolocation.clearWatch(watchIdRef.current);
   }, []);
 
   useEffect(() => {
-    if (!map || !isSocketConnected) return;
+    if (!data) return;
+    const reserved = dayjs(data.room.reserved_time).subtract(9, 'hours');
+    setMinuteLeft(reserved.diff(new Date(), 'minute'));
+    const intervalId = setInterval(() => {
+      setMinuteLeft(min => min - 1);
+    }, 60000);
+    return () => clearInterval(intervalId);
+  }, [data]);
+
+  useEffect(() => {
+    if (!map || !isSocketConnected || !data) return;
     const optionObj = {
       maximumAge: 30000,
       timeout: 27000,
@@ -162,16 +165,15 @@ function MapPage() {
 
     //목적지 좌표
     const { naver } = window;
-    console.log(result.lat, result.lng);
     const destinationMarker = new naver.maps.Marker({
-      position: new naver.maps.LatLng(result.lat, result.lng),
+      position: new naver.maps.LatLng(data.room.location.latitude, data.room.location.longitude),
       map: map,
     });
 
-    console.log('useEffect watchId>>', watchId);
+    watchIdRef.current = watchId;
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [map, isSocketConnected]);
+  }, [map, isSocketConnected, data]);
 
   //상대방 좌표가 변경됐을 때
   useEffect(() => {
@@ -215,6 +217,7 @@ function MapPage() {
       received={received}
       distanceProgress={distanceProgress}
     />
+    // <div>에효</div>
   );
 }
 

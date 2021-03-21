@@ -1,17 +1,24 @@
 import { useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { useLazyQuery, useReactiveVar } from '@apollo/client';
+import { useLazyQuery, useReactiveVar, useMutation, gql } from '@apollo/client';
 import { GOOGLE_LOGIN } from 'apollo/queries';
 import { invitedRoomIdVar, authVar } from 'apollo/store';
 import { useSaveReceiver } from 'apollo/mutations/saveReceiver';
 
-function Login(props) {
+function Login() {
   const _invitedRoomIdVar = useReactiveVar(invitedRoomIdVar);
   const _authVar = useReactiveVar(authVar);
-  const [googleLogin, { called, loading, data: googleData, error }] = useLazyQuery(GOOGLE_LOGIN);
+  const [googleLogin, { called, loading, data: googleData, error }] = useLazyQuery(GOOGLE_LOGIN, {
+    fetchPolicy: 'network-only',
+  });
   const router = useRouter();
   const { saveReceiver } = useSaveReceiver();
+  const [logout, { data: logoutData, error: logoutError }] = useMutation(gql`
+    mutation {
+      logoutFromAllDevices
+    }
+  `);
 
   const handleKakaoLogin = () => {
     const { Kakao } = window;
@@ -53,25 +60,32 @@ function Login(props) {
     }, 100);
   }, []);
 
+  //google login
   useEffect(() => {
     if (!googleData) return;
-    const { token, id: userId, name } = googleData.loginByGoogle;
-    authVar({ token, isLogined: true, userId, name });
+    const { access_token, id: userId, name, expires_in } = googleData.loginByGoogle;
+    authVar({ access_token, isLogined: true, userId, name, expires_in });
   }, [googleData]);
 
-  useEffect(() => {
-    if (!_authVar || !_authVar.token) return;
-    console.log('invited room id', _invitedRoomIdVar);
-    if (_invitedRoomIdVar) {
-      saveReceiver({
-        variables: {
-          room_id: _invitedRoomIdVar,
-        },
-      });
-      invitedRoomIdVar('');
-      router.push(`/chat/${_invitedRoomIdVar}`);
-    } else router.push(`/list`);
-  }, [_authVar]);
+  // useEffect(() => {
+  //   if (!_authVar || !_authVar.access_token) return;
+  //   console.log('invited room id', _invitedRoomIdVar);
+  //   if (_invitedRoomIdVar) {
+  //     saveReceiver({
+  //       variables: {
+  //         room_id: _invitedRoomIdVar,
+  //       },
+  //     });
+  //     invitedRoomIdVar('');
+  //     router.push(`/chat/${_invitedRoomIdVar}`);
+  //   } else router.push(`/list`);
+  // }, [_authVar]);
+
+  const handleLogout = () => {
+    logout();
+  };
+
+  console.log('logout', logoutData, logoutError);
 
   return (
     <section className="h-screen flex flex-col justify-center items-center">
@@ -94,6 +108,7 @@ function Login(props) {
         <Image src="/images/kakao.png" alt="카카오 로그인" width="20" height="20" />
         <span className="ml-2 text-md">카카오로 4초만에 시작하기</span>
       </button>
+      <button onClick={handleLogout}>로그아웃</button>
     </section>
   );
 }

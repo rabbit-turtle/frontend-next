@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { useQuery, useReactiveVar } from '@apollo/client';
+import { useQuery, useReactiveVar, gql, useMutation } from '@apollo/client';
 import { GET_ROOMS, GET_ROOM } from 'apollo/queries';
 import { authVar } from 'apollo/store';
 import RoomLog from 'components/RoomLog';
