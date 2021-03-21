@@ -67,19 +67,25 @@ function Login() {
     authVar({ access_token, isLogined: true, userId, name, expires_in });
   }, [googleData]);
 
-  // useEffect(() => {
-  //   if (!_authVar || !_authVar.access_token) return;
-  //   console.log('invited room id', _invitedRoomIdVar);
-  //   if (_invitedRoomIdVar) {
-  //     saveReceiver({
-  //       variables: {
-  //         room_id: _invitedRoomIdVar,
-  //       },
-  //     });
-  //     invitedRoomIdVar('');
-  //     router.push(`/chat/${_invitedRoomIdVar}`);
-  //   } else router.push(`/list`);
-  // }, [_authVar]);
+  useEffect(() => {
+    if (!_authVar || !_authVar.access_token) return;
+    const loggingIn = async () => {
+      if (_invitedRoomIdVar) {
+        try {
+          await saveReceiver({
+            variables: {
+              room_id: _invitedRoomIdVar,
+            },
+          });
+          invitedRoomIdVar('');
+          router.push(`/chat/${_invitedRoomIdVar}`);
+        } catch (error) {
+          router.push(`/list`);
+        }
+      } else router.push(`/list`);
+    };
+    loggingIn();
+  }, [_authVar]);
 
   const handleLogout = () => {
     logout();

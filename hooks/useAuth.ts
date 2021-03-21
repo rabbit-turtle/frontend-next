@@ -5,9 +5,6 @@ import { authVar, invitedRoomIdVar } from 'apollo/store';
 import { REFRESH_TOKEN } from 'apollo/queries';
 
 export const useAuth = () => {
-  // const { data, refetch, error } = useQuery(REFRESH_TOKEN, {
-  //   fetchPolicy: 'network-only',
-  // });
   const [refreshToken, { data, error }] = useLazyQuery(REFRESH_TOKEN, {
     fetchPolicy: 'network-only',
   });
