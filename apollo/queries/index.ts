@@ -7,7 +7,20 @@ export const GOOGLE_LOGIN = gql`
       name
       created_at
       social_type_id
-      token
+      access_token
+      expires_in
+      profile_url
+    }
+  }
+`;
+
+export const REFRESH_TOKEN = gql`
+  query {
+    refreshToken {
+      id
+      name
+      access_token
+      expires_in
       profile_url
     }
   }
