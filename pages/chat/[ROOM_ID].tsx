@@ -107,7 +107,7 @@ function Chat() {
       <div className="sticky -top-0 overflow-hidden">
         <NavigationBar
           title={
-            data?.room.inviter?.id !== _authVar.userId
+            data?.room.inviter?.id !== _authVar?.userId
               ? data?.room.inviter?.name
               : data?.room.receiver?.name
           }

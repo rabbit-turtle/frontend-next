@@ -42,7 +42,7 @@ export const useAuth = () => {
       onLogout();
       return;
     }
-
+    console.log(_authVar);
     setTimer(_authVar.expires_in - 10);
   }, [_authVar]);
 };
