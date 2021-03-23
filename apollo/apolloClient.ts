@@ -8,11 +8,6 @@ let token: string;
 
 const authLink = setContext((_, { headers }) => {
   if (typeof window !== 'undefined') {
-    // const tokenValue = document.cookie
-    //   .split('; ')
-    //   .find(row => row.startsWith('token'))
-    //   .split('=')[1];
-    // token = process.env.PUBLIC_RABBIT_TOKEN; // 임시 토큰
     token = authVar()?.access_token;
   }
   if (headers) token = headers.token;
