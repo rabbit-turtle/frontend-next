@@ -8,6 +8,10 @@ export const CREATE_CHAT = gql`
       content
       isSender
       created_at
+      chat_type_id
+      sender {
+        id
+      }
     }
   }
 `;
@@ -17,6 +21,7 @@ export interface CreateChatInput {
   room_id: string;
   content: string;
   created_at: Date;
+  chat_type_id: string;
 }
 
 export const useCreateChat = (ROOM_ID: string) => {

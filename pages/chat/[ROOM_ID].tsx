@@ -19,6 +19,7 @@ import MapNavigationBar from 'components/MapNavigationBar';
 import { useWebsocket } from 'hooks/useWebsocket';
 import { useChatReceived } from 'hooks/useChatReceived';
 import { Send } from 'react-ionicons';
+import { ALLOWED_CHAT_TYPES } from 'constants/index';
 
 const CreateRoomModal = dynamic(() => import('components/CreateRoomModal'));
 
@@ -89,6 +90,7 @@ function Chat() {
           room_id: ROOM_ID,
           content: value,
           created_at,
+          chat_type_id: ALLOWED_CHAT_TYPES.NORMAL,
         } as CreateChatInput,
       },
     });

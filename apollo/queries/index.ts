@@ -105,6 +105,11 @@ export const GET_ROOM = gql`
         isSender
         content
         created_at
+        room_id
+        chat_type_id
+        sender {
+          id
+        }
       }
     }
   }
