@@ -15,7 +15,7 @@ function Invitation({ isLogined }: { isLogined: boolean }) {
   const { saveReceiver, error } = useSaveReceiver();
 
   useEffect(() => {
-    if (!ROOM_ID || !_authVar) return; //나중에 useAuth 활성화하고나면 풀것
+    if (!ROOM_ID || !_authVar) return;
     if (!_authVar?.access_token) {
       invitedRoomIdVar(ROOM_ID as string);
       router.push('/login');

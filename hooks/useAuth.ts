@@ -5,7 +5,7 @@ import { authVar, invitedRoomIdVar } from 'apollo/store';
 import { REFRESH_TOKEN } from 'apollo/queries';
 
 export const useAuth = () => {
-  const [refreshToken, { data, error }] = useLazyQuery(REFRESH_TOKEN, {
+  const { data, error, refetch } = useQuery(REFRESH_TOKEN, {
     fetchPolicy: 'network-only',
   });
   const timeoutId = useRef<NodeJS.Timeout>(null);
@@ -19,7 +19,7 @@ export const useAuth = () => {
 
   const setTimer = (second: number) => {
     const newtimeoutId = setTimeout(() => {
-      refreshToken();
+      refetch();
     }, second * 1000);
     timeoutId.current = newtimeoutId;
   };
@@ -27,7 +27,8 @@ export const useAuth = () => {
   useEffect(() => {
     if (!data || error) {
       // refresh 했는데 토큰이 없는경우
-      console.log('data', data, 'error', error);
+      // console.log('data', data, 'error', error);
+
       authVar({ access_token: '', isLogined: false, userId: '', name: '', expires_in: 0 });
       return;
     }
@@ -41,13 +42,7 @@ export const useAuth = () => {
       onLogout();
       return;
     }
-    console.log('authvar', _authVar, 'data', data);
 
     setTimer(_authVar.expires_in - 10);
-    // setTimer(10);
   }, [_authVar]);
-
-  useEffect(() => {
-    refreshToken();
-  }, []);
 };
