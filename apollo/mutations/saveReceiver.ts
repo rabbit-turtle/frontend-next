@@ -30,26 +30,29 @@ export const SAVE_RECEIVER = gql`
 `;
 
 export const useSaveReceiver = () => {
-  const [saveReceiver, { data: savedRoom, error }] = useMutation(SAVE_RECEIVER);
+  const [saveReceiver, { data: savedRoom, error }] = useMutation(SAVE_RECEIVER, {
+    errorPolicy: 'all',
+  });
   const _invitedRoomIdVar = useReactiveVar(invitedRoomIdVar);
   const router = useRouter();
 
   useEffect(() => {
     if (!savedRoom) return;
-    if (error) {
-      router.push('/list');
-      toast.info(`유효하지 않은 채팅방입니다`, {
-        position: 'bottom-center',
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-      });
-      return;
-    }
     router.push(`/chat/${_invitedRoomIdVar}`);
     invitedRoomIdVar('');
   }, [savedRoom]);
+
+  useEffect(() => {
+    if (!error) return;
+    router.push('/list');
+    toast.info(`유효하지 않은 채팅방입니다`, {
+      position: 'bottom-center',
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+    });
+  }, [error]);
 
   return { saveReceiver, savedRoom, error };
 };

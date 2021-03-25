@@ -69,16 +69,13 @@ function Login() {
 
   useEffect(() => {
     if (!_authVar || !_authVar.access_token) return;
-    const loggingIn = async () => {
-      if (_invitedRoomIdVar) {
-        saveReceiver({
-          variables: {
-            room_id: _invitedRoomIdVar,
-          },
-        });
-      } else router.push(`/list`);
-    };
-    loggingIn();
+    if (_invitedRoomIdVar) {
+      saveReceiver({
+        variables: {
+          room_id: _invitedRoomIdVar,
+        },
+      });
+    } else router.push(`/list`);
   }, [_authVar]);
 
   const handleLogout = () => {
