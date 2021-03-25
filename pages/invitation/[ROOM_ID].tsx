@@ -12,7 +12,7 @@ function Invitation({ isLogined }: { isLogined: boolean }) {
   const _authVar = useReactiveVar(authVar);
   const { ROOM_ID } = router.query;
 
-  const { saveReceiver, error } = useSaveReceiver();
+  const { saveReceiver } = useSaveReceiver();
 
   useEffect(() => {
     if (!ROOM_ID || !_authVar) return;
@@ -26,7 +26,6 @@ function Invitation({ isLogined }: { isLogined: boolean }) {
         room_id: ROOM_ID,
       },
     });
-    router.push(`/chat/${ROOM_ID}`);
   }, [_authVar, ROOM_ID]);
 
   if (!_authVar || !_authVar?.access_token)

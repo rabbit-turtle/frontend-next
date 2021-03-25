@@ -71,17 +71,11 @@ function Login() {
     if (!_authVar || !_authVar.access_token) return;
     const loggingIn = async () => {
       if (_invitedRoomIdVar) {
-        try {
-          await saveReceiver({
-            variables: {
-              room_id: _invitedRoomIdVar,
-            },
-          });
-          invitedRoomIdVar('');
-          router.push(`/chat/${_invitedRoomIdVar}`);
-        } catch (error) {
-          router.push(`/list`);
-        }
+        saveReceiver({
+          variables: {
+            room_id: _invitedRoomIdVar,
+          },
+        });
       } else router.push(`/list`);
     };
     loggingIn();
