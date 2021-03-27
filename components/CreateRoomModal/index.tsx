@@ -14,7 +14,7 @@ const Skeleton = dynamic(() => import('components/Skeleton'));
 
 interface ICreateRoomModal {
   type: string;
-  id: string;
+  id?: string;
   title?: string;
   reserved_time?: string;
   reserved_location?: ICoords;
