@@ -20,7 +20,6 @@ import { useWebsocket } from 'hooks/useWebsocket';
 import { useChatReceived } from 'hooks/useChatReceived';
 import { Send } from 'react-ionicons';
 import { ALLOWED_CHAT_TYPES } from 'constants/index';
-
 const CreateRoomModal = dynamic(() => import('components/CreateRoomModal'));
 
 function Chat() {
@@ -31,7 +30,7 @@ function Chat() {
   const { ROOM_ID } = router.query;
   const lastChatId = useRef<string>('');
 
-  const [getRoom, { data }] = useLazyQuery(GET_ROOM);
+  const [getRoom, { data, error }] = useLazyQuery(GET_ROOM, { errorPolicy: 'ignore' });
   const { enterRoom, sendMessage, received, isSocketConnected } = useWebsocket();
   useChatReceived(received);
   const { createChat } = useCreateChat(ROOM_ID as string);
@@ -100,6 +99,8 @@ function Chat() {
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>): void => {
     setValue(e.target.value);
   };
+
+  console.log('data', data, 'error', error);
 
   return (
     <div className="relative">

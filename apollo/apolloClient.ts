@@ -25,7 +25,7 @@ const createApolloClient = () => {
     link: authLink.concat(
       new HttpLink({
         uri: process.env.NEXT_PUBLIC_GRAPHQL_SERVER,
-        credentials: 'include',
+        credentials: 'same-origin',
       }),
     ),
     cache: new InMemoryCache(),
