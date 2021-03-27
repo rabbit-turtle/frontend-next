@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import { invitedRoomIdVar, authVar } from 'apollo/store';
 import { useSaveReceiver } from 'apollo/mutations/saveReceiver';
@@ -11,7 +10,6 @@ function Invitation({ isLogined }: { isLogined: boolean }) {
   const router = useRouter();
   const _authVar = useReactiveVar(authVar);
   const { ROOM_ID } = router.query;
-
   const { saveReceiver } = useSaveReceiver();
 
   useEffect(() => {

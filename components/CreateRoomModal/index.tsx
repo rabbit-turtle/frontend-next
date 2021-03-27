@@ -128,7 +128,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
   useEffect(() => {
     if (!createdRoom) return;
     navigator.clipboard
-      .writeText(`${window.location.origin}/invitation/${createdRoom.createRoom.id}`)
+      .writeText(`${window.location.origin}/invitation?ROOM_ID=${createdRoom.createRoom.id}`)
       .then(() => {
         console.log('copy completed');
       }, console.log);
