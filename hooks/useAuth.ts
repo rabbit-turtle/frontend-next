@@ -18,11 +18,14 @@ export const useAuth = () => {
   };
 
   const setTimer = (second: number) => {
-    const newtimeoutId = setTimeout(() => {
-      refetch();
+    const newtimeoutId = setTimeout(async () => {
+      await refetch();
+      console.log('refetch');
     }, second * 1000);
     timeoutId.current = newtimeoutId;
   };
+
+  console.log('timeoutId : ', timeoutId);
 
   useEffect(() => {
     if (!data || error) {
