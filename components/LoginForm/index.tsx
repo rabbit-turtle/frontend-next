@@ -14,11 +14,6 @@ function Login() {
   });
   const router = useRouter();
   const { saveReceiver } = useSaveReceiver();
-  const [logout, { data: logoutData, error: logoutError }] = useMutation(gql`
-    mutation {
-      logoutFromAllDevices
-    }
-  `);
 
   const handleKakaoLogin = () => {
     const { Kakao } = window;
@@ -78,10 +73,6 @@ function Login() {
     } else router.push(`/list`);
   }, [_authVar]);
 
-  const handleLogout = () => {
-    logout();
-  };
-
   return (
     <section className="h-screen flex flex-col justify-center items-center">
       <p className="my-6 text-2xl font-semibold leading-relaxed mb-10">
@@ -91,19 +82,18 @@ function Login() {
       </p>
       <button
         id="googleLogin"
-        className="flex justify-center items-center rounded-xl w-1/2 py-4 shadow-md hover:text-white hover:bg-google-dark transition-colors"
+        className="flex justify-center items-center rounded-xl px-8 py-4 shadow-md hover:text-white hover:bg-google-dark transition-colors"
       >
         <Image src="/images/google.png" alt="구글 로그인" width="20" height="20" />
         <span className="ml-2 text-md">구글로 4초만에 시작하기</span>
       </button>
-      <button
+      {/* <button
         className="flex justify-center items-center rounded-xl w-1/2 py-4 shadow-md mt-3 bg-kakao hover:bg-kakao-dark transition-colors"
         onClick={handleKakaoLogin}
       >
         <Image src="/images/kakao.png" alt="카카오 로그인" width="20" height="20" />
         <span className="ml-2 text-md">카카오로 4초만에 시작하기</span>
-      </button>
-      <button onClick={handleLogout}>로그아웃</button>
+      </button> */}
     </section>
   );
 }

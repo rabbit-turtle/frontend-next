@@ -45,6 +45,7 @@ export const useSaveReceiver = () => {
   useEffect(() => {
     if (!error) return;
     router.push('/list');
+    console.log(error);
     toast.info(`유효하지 않은 채팅방입니다`, {
       position: 'bottom-center',
       autoClose: 3000,

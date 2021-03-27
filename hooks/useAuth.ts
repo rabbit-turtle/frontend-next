@@ -38,11 +38,11 @@ export const useAuth = () => {
   }, [data]);
 
   useEffect(() => {
+    console.log(_authVar);
     if (!_authVar || !_authVar.access_token) {
       onLogout();
       return;
     }
-    console.log(_authVar);
     setTimer(_authVar.expires_in - 10);
   }, [_authVar]);
 };
