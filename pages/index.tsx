@@ -8,7 +8,7 @@ export default function Home() {
         <title>토끼와 거북이</title>
       </Head>
       <Link href={`/list`}>
-        <a>안뇽</a>
+        <a></a>
       </Link>
     </>
   );

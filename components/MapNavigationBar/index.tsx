@@ -8,7 +8,7 @@ function MapNavigationBar({ title }: { title: string }) {
   const router = useRouter();
 
   return (
-    <Link href={`${ROUTES.map}/${router.query.ROOM_ID}`}>
+    <Link href={`${ROUTES.map}/[ROOM_ID]`} as={`${ROUTES.map}/${router.query.ROOM_ID}`}>
       <div className="2xl:w-512 top-13 w-full flex items-center justify-between py-3 px-7 bg-white border-t border-gray-200 cursor-pointer">
         <Location color="#b2dfdb" height="37px" width="37px" />
         <div className="w-4/5">

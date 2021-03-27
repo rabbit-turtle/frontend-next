@@ -28,7 +28,7 @@ function RoomLog({
   return (
     <div
       className="flex flex-col px-5 py-5 cursor-pointer"
-      onClick={() => router.push(`/chat/${id}`)}
+      onClick={() => router.push('/chat/[ROOM_ID]', `/chat/${id}`)}
     >
       <div className="flex justify-between items-center text-lg font-bold mb-2">
         <div>

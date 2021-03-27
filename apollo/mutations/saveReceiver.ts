@@ -38,7 +38,7 @@ export const useSaveReceiver = () => {
 
   useEffect(() => {
     if (!savedRoom) return;
-    router.push(`/chat/${_invitedRoomIdVar}`);
+    router.push('/chat/[ROOM_ID]', `/chat/${_invitedRoomIdVar}`);
     invitedRoomIdVar('');
   }, [savedRoom]);
 
