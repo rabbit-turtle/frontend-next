@@ -25,8 +25,6 @@ export const useAuth = () => {
     timeoutId.current = newtimeoutId;
   };
 
-  console.log('timeoutId : ', timeoutId);
-
   useEffect(() => {
     if (!data || error) {
       // refresh 했는데 토큰이 없는경우
