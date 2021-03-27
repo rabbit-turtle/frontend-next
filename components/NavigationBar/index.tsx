@@ -10,10 +10,11 @@ import { authVar } from 'apollo/store';
 
 interface NavProps {
   title: string;
+  receiver?: string;
   setIsCreateModalOn?: (isModalOn: boolean) => void;
 }
 
-function NavigationBar({ title, setIsCreateModalOn }: NavProps) {
+function NavigationBar({ title, receiver, setIsCreateModalOn }: NavProps) {
   const router = useRouter();
   const [mode, setMode] = useState<string>(router.pathname.startsWith(ROUTES.map) ? 'map' : 'chat');
   const [isUserMenuOn, setIsUserMenuOn] = useState<boolean>(false);
@@ -48,29 +49,11 @@ function NavigationBar({ title, setIsCreateModalOn }: NavProps) {
         )}
       </div>
       <Typography variant="h6">{title}</Typography>
-      <div className="cursor-pointer w-4">
-        {router.pathname.startsWith('/chat') && (
-          <CreateOutline color={'#00000'} height="25px" width="25px" onClick={handleEditClick} />
-        )}
-        {router.pathname === '/list' && (
-          <span ref={userbtnRef}>
-            <PersonCircleOutline
-              color="#ffcdd2"
-              height="30px"
-              width="30px"
-              onClick={() => setIsUserMenuOn(prev => !prev)}
-            />
-          </span>
-        )}
-      </div>
-      <div
-        className={`absolute top-12 right-2 py-3 px-5 bg-white shadow-lg z-100 transition-opacity cursor-pointer ${
-          isUserMenuOn ? 'opacity-100' : 'pointer-events-none opacity-0'
-        }`}
-        ref={userMenuRef}
-      >
-        <p onClick={handleLogout}>로그아웃</p>
-      </div>
+      {router.pathname !== '/list' && receiver && (
+        <span className="cursor-pointer" onClick={() => setIsCreateModalOn(true)}>
+          <CreateOutline color={'#00000'} height="25px" width="25px" />
+        </span>
+      )}
     </nav>
   );
 }

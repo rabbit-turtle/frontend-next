@@ -67,6 +67,7 @@ module.exports = {
         '2/3': '66%',
       },
       spacing: {
+        448: '28rem',
         512: '32rem',
         400: '25rem',
       },

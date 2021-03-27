@@ -100,8 +100,6 @@ function Chat() {
     setValue(e.target.value);
   };
 
-  console.log('data', data, 'error', error);
-
   return (
     <div className="relative">
       <Head>
@@ -114,6 +112,7 @@ function Chat() {
               ? data?.room.inviter?.name
               : data?.room.receiver?.name
           }
+          receiver={data?.room.receiver}
           setIsCreateModalOn={setIsCreateModalOn}
         />
         <MapNavigationBar title={data?.room.title} />
@@ -130,7 +129,7 @@ function Chat() {
         <div ref={chatEndRef} />
       </ChatLogWrapper>
       <form
-        className="fixed bottom-0 w-full 2xl:w-512 py-1 flex items-center justify-between bg-gray-100 border-t border-gray-300"
+        className="fixed bottom-0 w-full sm:w-448 py-1 flex items-center justify-between bg-gray-100 border-t border-gray-300"
         onSubmit={handleSubmit}
       >
         <MessageInput placeholder="채팅해 보세요🥕" onChange={handleChange} value={value} />
@@ -138,7 +137,16 @@ function Chat() {
           <Send color={'#ef9a9a'} height="25px" width="25px" />
         </span>
       </form>
-      {isCreateModalOn && <CreateRoomModal setIsCreateModalOn={setIsCreateModalOn} />}
+      {isCreateModalOn && (
+        <CreateRoomModal
+          type="chat"
+          id={data?.room.id}
+          title={data?.room.title}
+          reserved_time={data?.room.reserved_time}
+          reserved_location={data?.room.location}
+          setIsCreateModalOn={setIsCreateModalOn}
+        />
+      )}
     </div>
   );
 }
