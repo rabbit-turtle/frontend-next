@@ -4,7 +4,7 @@ import { ICoords } from 'types';
 // import { useMarker } from 'hooks/useMarker';
 
 //사용하실 때 <div id='map' /> 하나 지정해두시면 그 안으로 네이버지도가 쏙 들어갑니다
-export const useNavermap = (reserved_location: ICoords | null) => {
+export const useNavermap = (reserved_location?: ICoords) => {
   const [map, setMap] = useState();
   const [loading, setLoading] = useState<boolean>(true);
   // const markerRef = useRef(null);
