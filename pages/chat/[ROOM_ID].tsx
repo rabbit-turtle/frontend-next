@@ -69,7 +69,7 @@ function Chat() {
     if (lastChat) lastChatId.current = lastChat.id;
   }, [data]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = (e: any): void => {
     e.preventDefault();
 
     if (!value || !ROOM_ID) return;
@@ -101,11 +101,11 @@ function Chat() {
   };
 
   return (
-    <div className="relative">
+    <div className="relative flex flex-col h-screen">
       <Head>
         <title>채팅</title>
       </Head>
-      <div className="sticky -top-0 overflow-hidden">
+      <div className="sticky top-0 z-100 bg-white">
         <NavigationBar
           title={
             data?.room.inviter?.id !== _authVar?.userId
@@ -115,7 +115,7 @@ function Chat() {
           receiver={data?.room.receiver}
           setIsCreateModalOn={setIsCreateModalOn}
         />
-        <MapNavigationBar title={data?.room.title} />
+        <MapNavigationBar title={data?.room.title} reserved_time={data?.room.reserved_time} />
       </div>
       <ChatLogWrapper data={data}>
         {data?.room.chats.map(chat => (
@@ -129,11 +129,14 @@ function Chat() {
         <div ref={chatEndRef} />
       </ChatLogWrapper>
       <form
-        className="fixed bottom-0 w-full sm:w-448 py-1 flex items-center justify-between bg-gray-100 border-t border-gray-300"
+        className="sticky bottom-0 w-full sm:w-448 py-1 flex items-center justify-between bg-gray-100 border-t border-gray-300"
         onSubmit={handleSubmit}
       >
         <MessageInput placeholder="채팅해 보세요🥕" onChange={handleChange} value={value} />
-        <span className={`absolute right-2 cursor-pointer ${value ? 'opacity-100' : 'opacity-40'}`}>
+        <span
+          className={`absolute right-2 cursor-pointer ${value ? 'opacity-100' : 'opacity-40'}`}
+          onClick={handleSubmit}
+        >
           <Send color={'#ef9a9a'} height="25px" width="25px" />
         </span>
       </form>
@@ -154,23 +157,8 @@ function Chat() {
 export default Chat;
 
 const ChatLogWrapper = styled.div`
-  ${props =>
-    !props.data ||
-    (props.data?.room.chats.length < 10 &&
-      css`
-        @media (max-height: 700px) {
-          height: 450px;
-        }
-        @media (min-height: 700px) {
-          height: 570px;
-        }
-        @media (min-height: 900px) {
-          height: 760px;
-        }
-      `)}
-
+  flex-grow: 1;
   background-color: rgba(131, 124, 124, 0.1);
-  padding-bottom: 60px;
 `;
 
 const MessageInput = styled.input`
