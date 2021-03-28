@@ -7,6 +7,7 @@ import { CreateOutline, PersonCircleOutline, ChevronBackOutline } from 'react-io
 import { useClickOutside } from 'hooks/useClickOutside';
 import { useLogout } from 'apollo/mutations/logoutFromAllDevices';
 import { authVar } from 'apollo/store';
+import { useApolloClient } from '@apollo/client';
 
 interface NavProps {
   title: string;
@@ -21,6 +22,7 @@ function NavigationBar({ title, receiver, setIsCreateModalOn }: NavProps) {
   const { logout, data, error } = useLogout();
   const userMenuRef = useRef(null);
   const userbtnRef = useRef(null);
+  const client = useApolloClient();
 
   const linkToPage = () => {
     mode === 'map' ? router.back() : router.push('/list');
@@ -38,6 +40,7 @@ function NavigationBar({ title, receiver, setIsCreateModalOn }: NavProps) {
 
   const handleLogout = async () => {
     await logout();
+    client.cache.reset();
     authVar({ isLogined: false, access_token: '', userId: '', name: '', expires_in: 0 });
   };
 

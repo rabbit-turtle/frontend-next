@@ -16,7 +16,7 @@ function MapNavigationBar({ title, reserved_time }: { title: string; reserved_ti
         <div className="w-4/5">
           <p className="text-md truncate">{title}</p>
           <p className="text-primary-dark">
-            {dayjs(reserved_time).format('YYYY년 M월 D일 h:mm a')}
+            {dayjs(reserved_time).subtract(9, 'hours').format('YYYY년 M월 D일 h:mm a')}
           </p>
           <ProgressBar type="distance" value={40} />
         </div>

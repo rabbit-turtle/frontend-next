@@ -69,9 +69,7 @@ function Chat() {
     if (lastChat) lastChatId.current = lastChat.id;
   }, [data]);
 
-  const handleSubmit = (e: any): void => {
-    e.preventDefault();
-
+  const handleSubmit = (): void => {
     if (!value || !ROOM_ID) return;
     const id = uuidv4();
     const created_at = new Date();
@@ -105,7 +103,7 @@ function Chat() {
       <Head>
         <title>채팅</title>
       </Head>
-      <div className="sticky top-0 z-100 bg-white">
+      <div className="sticky top-0 z-10 bg-white">
         <NavigationBar
           title={
             data?.room.inviter?.id !== _authVar?.userId
@@ -128,18 +126,21 @@ function Chat() {
         ))}
         <div ref={chatEndRef} />
       </ChatLogWrapper>
-      <form
-        className="sticky bottom-0 w-full sm:w-448 py-1 flex items-center justify-between bg-gray-100 border-t border-gray-300"
-        onSubmit={handleSubmit}
-      >
-        <MessageInput placeholder="채팅해 보세요🥕" onChange={handleChange} value={value} />
+      <div />
+      <div className="fixed bottom-0 w-full sm:w-448 py-1 flex items-center justify-between bg-gray-100 border-t border-gray-300">
+        <MessageInput
+          placeholder="채팅해 보세요🥕"
+          onChange={handleChange}
+          value={value}
+          onKeyPress={(e: React.KeyboardEvent) => e.key === 'Enter' && handleSubmit()}
+        />
         <span
           className={`absolute right-2 cursor-pointer ${value ? 'opacity-100' : 'opacity-40'}`}
           onClick={handleSubmit}
         >
           <Send color={'#ef9a9a'} height="25px" width="25px" />
         </span>
-      </form>
+      </div>
       {isCreateModalOn && (
         <CreateRoomModal
           type="chat"
@@ -159,6 +160,8 @@ export default Chat;
 const ChatLogWrapper = styled.div`
   flex-grow: 1;
   background-color: rgba(131, 124, 124, 0.1);
+  padding-bottom: 60px;
+  overflow: auto;
 `;
 
 const MessageInput = styled.input`
@@ -168,6 +171,7 @@ const MessageInput = styled.input`
   outline: none;
   border-radius: 40px;
   text-indent: 15px;
+  font-size: 16px;
   border: 1px solid rgba(131, 124, 124, 0.4);
   background-color: white;
 
