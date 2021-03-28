@@ -10,7 +10,7 @@ import { useChatReceived } from 'hooks/useChatReceived';
 import NavigationBar from 'components/NavigationBar';
 const CreateRoomModal = dynamic(() => import('components/CreateRoomModal'));
 
-function RoomList() {
+function RoomList(props) {
   const [isCreateModalOn, setIsCreateModalOn] = useState<boolean>(false);
   const { data, loading, error } = useQuery(GET_ROOMS);
   const { received, enterRoom, isSocketConnected } = useWebsocket();
