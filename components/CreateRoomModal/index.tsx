@@ -23,7 +23,7 @@ interface ICreateRoomModal {
 
 interface IinputData {
   title: string;
-  reserved_time: string;
+  reserved_time: string | Date;
   title_valid: boolean;
 }
 
@@ -39,8 +39,7 @@ function CreateRoomModal({
   const [location, setLocation] = useState<ICoords>();
   const [inputData, setInputData] = useState<IinputData>({
     title: type === 'chat' ? title : '',
-    reserved_time:
-      type === 'chat' ? dayjs(reserved_time).subtract(9, 'hours').format('YYYY-MM-DDThh:mm') : '',
+    reserved_time: type === 'chat' ? dayjs(reserved_time).format('YYYY-MM-DDThh:mm') : '',
     title_valid: true,
   });
   const [isDaumPostcodeOn, setIsDaumPostcodeOn] = useState<boolean>(false);
@@ -67,6 +66,7 @@ function CreateRoomModal({
       type !== 'chat' ? { title, reserved_time, location } : { room_id, reserved_time, location };
     const createOrUpdateRoomData = Object.keys(queryObj).reduce((acc, key, idx) => {
       // if (idx !== 2) return queryObj[key] ? { ...acc, [key]: queryObj[key] } : acc;
+      if (key === 'reserved_time') queryObj[key] = new Date(queryObj[key]);
       return queryObj[key] ? { ...acc, [key]: queryObj[key] } : acc;
     }, {});
 
