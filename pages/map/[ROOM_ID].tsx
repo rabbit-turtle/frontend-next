@@ -142,7 +142,7 @@ function MapPage() {
 
   useEffect(() => {
     if (!data) return;
-    const reserved = dayjs(data.room.reserved_time).subtract(9, 'hours');
+    const reserved = dayjs(data.room.reserved_time);
     setMinuteLeft(reserved.diff(new Date(), 'minute'));
     const intervalId = setInterval(() => {
       setMinuteLeft(min => min - 1);
