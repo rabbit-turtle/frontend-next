@@ -75,14 +75,22 @@ function ChatList() {
   return (
     <>
       <div className="flex-grow pb-14 bg-gray-100 overflow-auto">
-        {chats?.chats.map((chat, idx: number) => (
-          <span key={chat.id} id={`chat${chat.id}`} ref={idx === 0 ? firstChatRef : null}>
-            <Chatlog
-              isSender={chat.isSender}
-              content={chat.content}
-              created_at={dayjs(chat.created_at).format('h:mm A')}
-            />
-          </span>
+        {chats?.chats.map((chat, idx: number, arr: any[]) => (
+          <>
+            {idx < arr.length - 1 &&
+              dayjs(arr[idx].created_at).date() !== dayjs(arr[idx + 1].created_at).date() && (
+                <div className="text-center text-gray-500 text-xs">
+                  {dayjs(arr[idx + 1].created_at).format('YYYY년 M월 D일')}
+                </div>
+              )}
+            <span key={chat.id} id={`chat${chat.id}`} ref={idx === 0 ? firstChatRef : null}>
+              <Chatlog
+                isSender={chat.isSender}
+                content={chat.content}
+                created_at={dayjs(chat.created_at).format('h:mm A')}
+              />
+            </span>
+          </>
         ))}
         <div ref={chatEndRef} />
       </div>
