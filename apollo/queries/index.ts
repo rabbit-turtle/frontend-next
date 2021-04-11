@@ -66,7 +66,7 @@ export const GET_ROOMS = gql`
 `;
 
 export const GET_ROOM = gql`
-  query GetRoom($room_id: String!, $offset: Int, $limit: Int) {
+  query GetRoom($room_id: String!) {
     room(room_id: $room_id) {
       id
       title
@@ -100,16 +100,21 @@ export const GET_ROOM = gql`
         isSender
         created_at
       }
-      chats(offset: $offset, limit: $limit) {
+    }
+  }
+`;
+
+export const GET_CHATS = gql`
+  query GETCHAT($room_id: String!, $offset: Int, $limit: Int) {
+    chats(room_id: $room_id, offset: $offset, limit: $limit) {
+      id
+      isSender
+      content
+      created_at
+      room_id
+      chat_type_id
+      sender {
         id
-        isSender
-        content
-        created_at
-        room_id
-        chat_type_id
-        sender {
-          id
-        }
       }
     }
   }

@@ -3,13 +3,13 @@ import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { authVar } from 'apollo/store';
-import { GET_ROOM } from 'apollo/queries';
+import { GET_ROOM, GET_CHATS } from 'apollo/queries';
 import { useCreateChat, CreateChatInput } from 'apollo/mutations/createChat';
 import {
   useSaveLastViewedChat,
   SaveLastViewedChatInput,
 } from 'apollo/mutations/saveLastViewedChat';
-import { useLazyQuery, useReactiveVar } from '@apollo/client';
+import { useLazyQuery, useReactiveVar, useQuery } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import styled, { css } from 'styled-components';
@@ -22,6 +22,8 @@ import { Send } from 'react-ionicons';
 import { ALLOWED_CHAT_TYPES } from 'constants/index';
 const CreateRoomModal = dynamic(() => import('components/CreateRoomModal'));
 
+const limit = 10;
+
 function Chat() {
   const [value, setValue] = useState<string>('');
   const [isCreateModalOn, setIsCreateModalOn] = useState<boolean>(false);
@@ -29,8 +31,47 @@ function Chat() {
   const router = useRouter();
   const { ROOM_ID } = router.query;
   const lastChatId = useRef<string>('');
+  const offsetRef = useRef<number>(0);
+  const firstChatRef = useRef(null);
+  const { data } = useQuery(GET_ROOM, {
+    errorPolicy: 'ignore',
+    variables: { room_id: ROOM_ID },
+  });
+  const { data: chats, fetchMore } = useQuery(GET_CHATS, {
+    variables: {
+      room_id: ROOM_ID,
+      limit,
+      offset: 0,
+    },
+    errorPolicy: 'ignore',
+    onCompleted: () => {
+      chatEndRef.current?.scrollIntoView();
+      observerRef.current.observe(firstChatRef.current);
+    },
+  });
+  const observerRef = useRef<IntersectionObserver>(
+    new IntersectionObserver(
+      async (entries, observer) => {
+        if (entries[0].isIntersecting) {
+          await fetchMore({
+            variables: { room_id: ROOM_ID, offset: offsetRef.current + limit, limit },
+            updateQuery: (prev, { fetchMoreResult }) => {
+              if (!fetchMoreResult) return prev;
+              return {
+                chats: [...fetchMoreResult.chats, ...prev.chats],
+              };
+            },
+          });
+          offsetRef.current += limit;
+          observer.unobserve(entries[0].target);
+          if (entries[0].target.id !== firstChatRef.current.id)
+            observer.observe(firstChatRef.current);
+        }
+      },
+      { threshold: 0 },
+    ),
+  );
 
-  const [getRoom, { data, error }] = useLazyQuery(GET_ROOM, { errorPolicy: 'ignore' });
   const { enterRoom, sendMessage, received, isSocketConnected } = useWebsocket();
   useChatReceived(received);
   const { createChat } = useCreateChat(ROOM_ID as string);
@@ -38,13 +79,12 @@ function Chat() {
 
   const _authVar = useReactiveVar(authVar);
 
+  //intersection observer 설정, unmount시 lastviewedchat 저장
   useEffect(() => {
-    if (!ROOM_ID) return;
-    getRoom({ variables: { room_id: ROOM_ID } });
+    if (!firstChatRef.current) return;
 
     return () => {
-      if (!lastChatId.current) return;
-
+      observerRef.current?.disconnect();
       saveLastViewedChat({
         variables: {
           saveLastViewedChatData: {
@@ -54,7 +94,7 @@ function Chat() {
         },
       });
     };
-  }, [ROOM_ID]);
+  }, []);
 
   useEffect(() => {
     if (!ROOM_ID || !isSocketConnected) return;
@@ -63,11 +103,13 @@ function Chat() {
   }, [ROOM_ID, isSocketConnected]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    const chatsLength = data?.room.chats.length;
-    const lastChat = data?.room.chats[chatsLength - 1];
+    // chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (offsetRef.current !== 0) return;
+    // chatEndRef.current?.scrollIntoView();
+    const chatsLength = chats?.chats.length;
+    const lastChat = chats?.chats[chatsLength - 1];
     if (lastChat) lastChatId.current = lastChat.id;
-  }, [data]);
+  }, [chats]);
 
   const handleSubmit = (): void => {
     if (!value || !ROOM_ID) return;
@@ -106,9 +148,9 @@ function Chat() {
       <div className="sticky top-0 z-10 bg-white">
         <NavigationBar
           title={
-            data?.room.inviter?.id !== _authVar?.userId
-              ? data?.room.inviter?.name
-              : data?.room.receiver?.name
+            data?.room?.inviter?.id !== _authVar?.userId
+              ? data?.room?.inviter?.name
+              : data?.room?.receiver?.name
           }
           receiver={data?.room.receiver}
           setIsCreateModalOn={setIsCreateModalOn}
@@ -116,13 +158,14 @@ function Chat() {
         <MapNavigationBar title={data?.room.title} reserved_time={data?.room.reserved_time} />
       </div>
       <ChatLogWrapper data={data}>
-        {data?.room.chats.map(chat => (
-          <Chatlog
-            key={chat.id}
-            isSender={chat.isSender}
-            content={chat.content}
-            created_at={dayjs(chat.created_at).format('h:mm A')}
-          />
+        {chats?.chats.map((chat, idx: number) => (
+          <span key={chat.id} id={`chat${chat.id}`} ref={idx === 0 ? firstChatRef : null}>
+            <Chatlog
+              isSender={chat.isSender}
+              content={chat.content}
+              created_at={dayjs(chat.created_at).format('h:mm A')}
+            />
+          </span>
         ))}
         <div ref={chatEndRef} />
       </ChatLogWrapper>
