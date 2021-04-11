@@ -3,11 +3,12 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import Input from '@material-ui/core/Input';
 import dayjs from 'dayjs';
-import { toast } from 'react-toastify';
 import { useNavermap } from 'hooks/useNavermap';
 import { CreateRoomInput, useCreateRoom } from 'apollo/mutations/createRoom';
 import { UpdateRoomInput, useUpdateRoom } from 'apollo/mutations/updateRoom';
 import { ICoords } from 'types';
+import { useClipboard } from 'hooks/useClipboard';
+import { toast } from 'react-toastify';
 
 const DaumPostcode = dynamic(() => import('components/DaumPostcode'));
 const Skeleton = dynamic(() => import('components/Skeleton'));
@@ -44,11 +45,13 @@ function CreateRoomModal({
   });
   const [isDaumPostcodeOn, setIsDaumPostcodeOn] = useState<boolean>(false);
   const [address, setAddress] = useState<string>('');
+  const mapEventRef = useRef(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef(null);
   const { createRoom, createdRoom } = useCreateRoom();
   const { updateRoom } = useUpdateRoom(id);
   const { naver } = window;
+  const { copyToClipBoard } = useClipboard(setIsCreateModalOn);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -143,14 +146,33 @@ function CreateRoomModal({
       });
       return;
     }
+
     markerRef.current.setPosition(coord);
   };
 
   useEffect(() => {
     if (!map) return;
+
     const { naver } = window;
-    naver.maps.Event.addListener(map, 'click', handleMapClick);
+    const mapListner = naver.maps.Event.addListener(map, 'click', handleMapClick);
+    mapEventRef.current = mapListner;
   }, [map]);
+
+  useEffect(() => {
+    if (!createdRoom) return;
+    if (!map) return;
+
+    const { naver } = window;
+    naver.maps.Event.clearInstanceListeners(map);
+
+    toast.success('방이 생성되었습니다! 초대링크를 복사해 주세요', {
+      position: 'bottom-center',
+      autoClose: 2500,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+    });
+  }, [map, createdRoom]);
 
   //Chat에서 기본 주소 띄우기
   useEffect(() => {
@@ -170,25 +192,6 @@ function CreateRoomModal({
     );
   }, []);
 
-  //방이 생성되었을 때
-  useEffect(() => {
-    if (!createdRoom) return;
-    navigator.clipboard
-      .writeText(`${window.location.origin}/invitation?ROOM_ID=${createdRoom.createRoom.id}`)
-      .then(() => {
-        console.log('copy completed');
-      }, console.log);
-    setIsCreateModalOn(false);
-
-    toast.info(`초대 링크가 클립보드에 복사되었습니다`, {
-      position: 'bottom-center',
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: false,
-    });
-  }, [createdRoom]);
-
   return (
     <div
       className="fixed inset-0 bg-black-op-3 z-20  overflow-auto"
@@ -207,6 +210,7 @@ function CreateRoomModal({
             error={!inputData.title_valid}
             onChange={handleInputChange}
             value={title ? title : inputData.title}
+            disabled={!!createdRoom}
             name="title"
           />
           <Input
@@ -214,6 +218,7 @@ function CreateRoomModal({
             fullWidth
             onChange={handleInputChange}
             value={inputData.reserved_time}
+            disabled={!!createdRoom}
             name="reserved_time"
           />
           <Input
@@ -221,29 +226,39 @@ function CreateRoomModal({
             fullWidth
             value={address}
             placeholder="주소로 검색하기 🥕"
+            disabled={!!createdRoom}
             onClick={togglePostcodeSearch}
           />
         </div>
-        {isDaumPostcodeOn && (
+        {!createdRoom && isDaumPostcodeOn && (
           <DaumPostcode onComplete={handlePostcodeComplete} onClose={togglePostcodeSearch} />
         )}
         <div id="map" className="relative w-full h-44 bg-white">
           {loading && <Skeleton />}
         </div>
-        <div className="flex items-center justify-around m-3 w-full">
-          <button
-            className=" w-1/3 py-3  bg-secondary rounded-md shadow-md hover:bg-secondary-dark transition-colors"
-            onClick={() => setIsCreateModalOn(false)}
+        {!!createdRoom ? (
+          <div
+            className="w-4/5 py-3 m-3 text-center bg-primary rounded-md shadow-md hover:bg-primary-dark transition-colors"
+            onClick={() => copyToClipBoard(createdRoom.createRoom.id)}
           >
-            취소
-          </button>
-          <button
-            className=" w-1/3 py-3 bg-primary rounded-md shadow-md hover:bg-primary-dark  transition-colors"
-            onClick={handleSubmit}
-          >
-            {type === 'chat' ? '수정하기' : '생성하기'}
-          </button>
-        </div>
+            📋 초대링크 복사하기
+          </div>
+        ) : (
+          <div className="flex items-center justify-around m-3 w-full">
+            <button
+              className="w-1/3 py-3  bg-secondary rounded-md shadow-md hover:bg-secondary-dark transition-colors"
+              onClick={() => setIsCreateModalOn(false)}
+            >
+              취소
+            </button>
+            <button
+              className="w-1/3 py-3 bg-primary rounded-md shadow-md hover:bg-primary-dark  transition-colors"
+              onClick={handleSubmit}
+            >
+              {type === 'chat' ? '수정하기' : '생성하기'}
+            </button>
+          </div>
+        )}
       </form>
     </div>
   );
