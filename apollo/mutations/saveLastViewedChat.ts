@@ -19,6 +19,7 @@ export interface SaveLastViewedChatInput {
 
 export const useSaveLastViewedChat = (ROOM_ID: string) => {
   const [saveLastViewedChat, { error, data }] = useMutation(SAVE_LAST_VIEWED_CHAT, {
+    errorPolicy: 'ignore',
     update(cache, { data }) {
       const lastViewedChat = data?.saveLastViewedChat;
 

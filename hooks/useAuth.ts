@@ -5,7 +5,7 @@ import { authVar, invitedRoomIdVar } from 'apollo/store';
 import { REFRESH_TOKEN } from 'apollo/queries';
 
 export const useAuth = () => {
-  const { data, error, refetch } = useQuery(REFRESH_TOKEN, {
+  const { data, error, loading, refetch } = useQuery(REFRESH_TOKEN, {
     fetchPolicy: 'network-only',
   });
   const timeoutId = useRef<NodeJS.Timeout>(null);
@@ -46,4 +46,6 @@ export const useAuth = () => {
     }
     setTimer(_authVar.expires_in - 10);
   }, [_authVar]);
+
+  return { loading, data };
 };

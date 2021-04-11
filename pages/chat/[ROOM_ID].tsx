@@ -13,7 +13,6 @@ import { useLazyQuery, useReactiveVar, useQuery } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import styled, { css } from 'styled-components';
-import Chatlog from 'components/ChatLog';
 import NavigationBar from 'components/NavigationBar';
 import MapNavigationBar from 'components/MapNavigationBar';
 import { useWebsocket } from 'hooks/useWebsocket';
@@ -21,95 +20,29 @@ import { useChatReceived } from 'hooks/useChatReceived';
 import { Send } from 'react-ionicons';
 import { ALLOWED_CHAT_TYPES } from 'constants/index';
 const CreateRoomModal = dynamic(() => import('components/CreateRoomModal'));
-
-const limit = 10;
+const ChatList = dynamic(() => import('components/ChatList'), { ssr: false });
 
 function Chat() {
   const [value, setValue] = useState<string>('');
   const [isCreateModalOn, setIsCreateModalOn] = useState<boolean>(false);
-  const chatEndRef = useRef(null);
   const router = useRouter();
   const { ROOM_ID } = router.query;
-  const lastChatId = useRef<string>('');
-  const offsetRef = useRef<number>(0);
-  const firstChatRef = useRef(null);
   const { data } = useQuery(GET_ROOM, {
     errorPolicy: 'ignore',
     variables: { room_id: ROOM_ID },
   });
-  const { data: chats, fetchMore } = useQuery(GET_CHATS, {
-    variables: {
-      room_id: ROOM_ID,
-      limit,
-      offset: 0,
-    },
-    errorPolicy: 'ignore',
-    onCompleted: () => {
-      chatEndRef.current?.scrollIntoView();
-      observerRef.current.observe(firstChatRef.current);
-    },
-  });
-  const observerRef = useRef<IntersectionObserver>(
-    new IntersectionObserver(
-      async (entries, observer) => {
-        if (entries[0].isIntersecting) {
-          await fetchMore({
-            variables: { room_id: ROOM_ID, offset: offsetRef.current + limit, limit },
-            updateQuery: (prev, { fetchMoreResult }) => {
-              if (!fetchMoreResult) return prev;
-              return {
-                chats: [...fetchMoreResult.chats, ...prev.chats],
-              };
-            },
-          });
-          offsetRef.current += limit;
-          observer.unobserve(entries[0].target);
-          if (entries[0].target.id !== firstChatRef.current.id)
-            observer.observe(firstChatRef.current);
-        }
-      },
-      { threshold: 0 },
-    ),
-  );
 
   const { enterRoom, sendMessage, received, isSocketConnected } = useWebsocket();
   useChatReceived(received);
   const { createChat } = useCreateChat(ROOM_ID as string);
-  const { saveLastViewedChat } = useSaveLastViewedChat(ROOM_ID as string);
 
   const _authVar = useReactiveVar(authVar);
-
-  //intersection observer 설정, unmount시 lastviewedchat 저장
-  useEffect(() => {
-    if (!firstChatRef.current) return;
-
-    return () => {
-      observerRef.current?.disconnect();
-      saveLastViewedChat({
-        variables: {
-          saveLastViewedChatData: {
-            room_id: ROOM_ID,
-            chat_id: lastChatId.current,
-          } as SaveLastViewedChatInput,
-        },
-      });
-    };
-  }, []);
 
   useEffect(() => {
     if (!ROOM_ID || !isSocketConnected) return;
 
     enterRoom(ROOM_ID as string);
   }, [ROOM_ID, isSocketConnected]);
-
-  useEffect(() => {
-    // chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    if (offsetRef.current !== 0) return;
-    // chatEndRef.current?.scrollIntoView();
-    const chatsLength = chats?.chats.length;
-    const lastChat = chats?.chats[chatsLength - 1];
-    if (lastChat) lastChatId.current = lastChat.id;
-  }, [chats]);
 
   const handleSubmit = (): void => {
     if (!value || !ROOM_ID) return;
@@ -157,18 +90,7 @@ function Chat() {
         />
         <MapNavigationBar title={data?.room.title} reserved_time={data?.room.reserved_time} />
       </div>
-      <ChatLogWrapper data={data}>
-        {chats?.chats.map((chat, idx: number) => (
-          <span key={chat.id} id={`chat${chat.id}`} ref={idx === 0 ? firstChatRef : null}>
-            <Chatlog
-              isSender={chat.isSender}
-              content={chat.content}
-              created_at={dayjs(chat.created_at).format('h:mm A')}
-            />
-          </span>
-        ))}
-        <div ref={chatEndRef} />
-      </ChatLogWrapper>
+      <ChatList />
       <div />
       <div className="fixed bottom-0 w-full sm:w-448 py-1 flex items-center justify-between bg-gray-100 border-t border-gray-300">
         <MessageInput
@@ -199,13 +121,6 @@ function Chat() {
 }
 
 export default Chat;
-
-const ChatLogWrapper = styled.div`
-  flex-grow: 1;
-  background-color: rgba(131, 124, 124, 0.1);
-  padding-bottom: 60px;
-  overflow: auto;
-`;
 
 const MessageInput = styled.input`
   margin: 5px 0 5px 5px;

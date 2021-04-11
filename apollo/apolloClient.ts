@@ -34,8 +34,11 @@ const createApolloClient = () => {
           fields: {
             chats: {
               keyArgs: ['room_id'],
-              merge(_, incoming) {
-                return [...incoming];
+              merge(existing = [], incoming, { args }) {
+                if (!args.offset) {
+                  return [...incoming];
+                }
+                return [...incoming, ...existing];
               },
             },
           },

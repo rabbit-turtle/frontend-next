@@ -28,26 +28,12 @@ export const useCreateChat = (ROOM_ID: string) => {
   const [createChat] = useMutation(CREATE_CHAT, {
     update(cache, { data }) {
       const newChatFromResponse = data?.createChat;
-      // const existingRoom = cache.readQuery({
-      //   query: GET_ROOM,
-      //   variables: { room_id: ROOM_ID },
-      // }) as { room: { chats: string[] } };
+
       const existingChats = cache.readQuery({
         query: GET_CHATS,
         variables: { room_id: ROOM_ID },
       }) as { chats: any[] };
-      console.log('existing', existingChats);
-      // cache.writeQuery({
-      //   query: GET_ROOM,
-      //   data: {
-      //     room: {
-      //       ...existingRoom.room,
-      //       recentChat: newChatFromResponse,
-      //       chats: [...existingRoom.room.chats, newChatFromResponse],
-      //     },
-      //   },
-      // });
-      console.log('new', [...existingChats.chats, newChatFromResponse]);
+
       cache.writeQuery({
         query: GET_CHATS,
         data: {
@@ -55,6 +41,18 @@ export const useCreateChat = (ROOM_ID: string) => {
         },
         variables: {
           room_id: ROOM_ID,
+        },
+      });
+
+      cache.writeFragment({
+        id: `Room:${ROOM_ID}`,
+        fragment: gql`
+          fragment RecentChat on Room {
+            recentChat
+          }
+        `,
+        data: {
+          recentChat: newChatFromResponse,
         },
       });
     },
