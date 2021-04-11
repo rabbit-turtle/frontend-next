@@ -1,5 +1,5 @@
 import { gql, useMutation } from '@apollo/client';
-import { GET_ROOM } from '../queries/index';
+import { GET_ROOM, GET_CHATS } from '../queries/index';
 
 export const CREATE_CHAT = gql`
   mutation CreateChat($createChatData: CreateChatInput!) {
@@ -28,19 +28,31 @@ export const useCreateChat = (ROOM_ID: string) => {
   const [createChat] = useMutation(CREATE_CHAT, {
     update(cache, { data }) {
       const newChatFromResponse = data?.createChat;
-      const existingRoom = cache.readQuery({
-        query: GET_ROOM,
+
+      const existingChats = cache.readQuery({
+        query: GET_CHATS,
         variables: { room_id: ROOM_ID },
-      }) as { room: { chats: string[] } };
+      }) as { chats: any[] };
 
       cache.writeQuery({
-        query: GET_ROOM,
+        query: GET_CHATS,
         data: {
-          room: {
-            ...existingRoom.room,
-            recentChat: newChatFromResponse,
-            chats: [...existingRoom.room.chats, newChatFromResponse],
-          },
+          chats: [...existingChats.chats, newChatFromResponse],
+        },
+        variables: {
+          room_id: ROOM_ID,
+        },
+      });
+
+      cache.writeFragment({
+        id: `Room:${ROOM_ID}`,
+        fragment: gql`
+          fragment RecentChat on Room {
+            recentChat
+          }
+        `,
+        data: {
+          recentChat: newChatFromResponse,
         },
       });
     },

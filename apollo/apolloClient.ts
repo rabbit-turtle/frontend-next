@@ -28,7 +28,23 @@ const createApolloClient = () => {
         credentials: 'include',
       }),
     ),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      typePolicies: {
+        Query: {
+          fields: {
+            chats: {
+              keyArgs: ['room_id'],
+              merge(existing = [], incoming, { args }) {
+                if (!args.offset) {
+                  return [...incoming];
+                }
+                return [...incoming, ...existing];
+              },
+            },
+          },
+        },
+      },
+    }),
   });
 };
 
@@ -37,7 +53,7 @@ export const initializeApollo = (initialState = null): ApolloClient<NormalizedCa
 
   if (initialState) {
     const existingCache = _apolloClient.extract();
-    _apolloClient.cache.restore({ ...existingCache, initialState });
+    _apolloClient.cache.restore({ ...existingCache, ...initialState });
   }
 
   //ssg나 ssr인 경우
