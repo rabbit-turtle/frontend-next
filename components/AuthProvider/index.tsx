@@ -8,7 +8,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   // const _authVar = useReactiveVar(authVar);
   // if (loading || _authVar) return null;
 
-  return children;
+  return <>{children}</>;
 }
 
 export default AuthProvider;
