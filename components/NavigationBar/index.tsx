@@ -50,7 +50,7 @@ function NavigationBar({ title, receiver, setIsCreateModalOn }: NavProps) {
       _currentSocketVar.send(
         JSON.stringify({
           ROOM_ID: room.id,
-          action: 'enterRoom',
+          action: 'leaveRoom',
         }),
       );
     });

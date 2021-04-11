@@ -65,7 +65,7 @@ function ChatList() {
   }, []);
 
   useEffect(() => {
-    if (!chats) return;
+    if (!chats || chats.chats.length <= 0) return;
     if (lastChatIdRef.current !== chats?.chats[chats.chats.length - 1].id) {
       // 새로운 채팅이 추가된경우
       observerRef.current.observe(firstChatRef.current);
