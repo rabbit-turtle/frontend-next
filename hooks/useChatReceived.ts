@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useApolloClient, gql } from '@apollo/client';
-import { GET_ROOM } from 'apollo/queries';
+import { GET_CHATS, GET_ROOM } from 'apollo/queries';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/router';
 import { SOCKET_MESSAGE_TYPE } from 'constants/index';
@@ -27,7 +27,24 @@ export const useChatReceived = (received: string) => {
       variables: { room_id: ROOM_ID },
     });
 
+    const existingChats = apolloClient.readQuery({
+      query: GET_CHATS,
+      variables: {
+        room_id: ROOM_ID,
+      },
+    });
+
+    const newChat = [...(existingChats?.chats || []), newChatFromSocket];
+
     if (existingRoom) {
+      apolloClient.writeQuery({
+        query: GET_CHATS,
+        data: {
+          chats: newChat,
+        },
+        variables: { room_id: ROOM_ID },
+      });
+
       apolloClient.writeQuery({
         query: GET_ROOM,
         variables: { room_id: ROOM_ID },
@@ -35,7 +52,6 @@ export const useChatReceived = (received: string) => {
           room: {
             ...existingRoom.room,
             recentChat: newChatFromSocket,
-            chats: [...existingRoom.room.chats, newChatFromSocket],
           },
         },
       });

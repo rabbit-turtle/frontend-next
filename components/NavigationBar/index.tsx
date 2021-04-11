@@ -6,8 +6,9 @@ import { ROUTES } from 'constants/index';
 import { CreateOutline, PersonCircleOutline, ChevronBackOutline } from 'react-ionicons';
 import { useClickOutside } from 'hooks/useClickOutside';
 import { useLogout } from 'apollo/mutations/logoutFromAllDevices';
-import { authVar } from 'apollo/store';
-import { useApolloClient } from '@apollo/client';
+import { authVar, currentSocketVar } from 'apollo/store';
+import { useApolloClient, useReactiveVar } from '@apollo/client';
+import { GET_ROOMS } from 'apollo/queries';
 
 interface NavProps {
   title: string;
@@ -23,6 +24,7 @@ function NavigationBar({ title, receiver, setIsCreateModalOn }: NavProps) {
   const userMenuRef = useRef(null);
   const userbtnRef = useRef(null);
   const client = useApolloClient();
+  const _currentSocketVar = useReactiveVar(currentSocketVar);
 
   const linkToPage = () => {
     mode === 'map' ? router.back() : router.push('/list');
@@ -40,6 +42,19 @@ function NavigationBar({ title, receiver, setIsCreateModalOn }: NavProps) {
 
   const handleLogout = async () => {
     await logout();
+    const existingRooms = client.cache.readQuery({
+      query: GET_ROOMS,
+    }) as { rooms: any[] };
+
+    existingRooms.rooms.forEach(room => {
+      _currentSocketVar.send(
+        JSON.stringify({
+          ROOM_ID: room.id,
+          action: 'leaveRoom',
+        }),
+      );
+    });
+
     client.cache.reset();
     authVar({ isLogined: false, access_token: '', userId: '', name: '', expires_in: 0 });
   };
