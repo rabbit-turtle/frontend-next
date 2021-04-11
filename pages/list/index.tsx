@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { useQuery, useReactiveVar, gql, useMutation } from '@apollo/client';
-import { GET_ROOMS, GET_ROOM } from 'apollo/queries';
+import { useQuery, useReactiveVar } from '@apollo/client';
+import { GET_ROOMS } from 'apollo/queries';
 import { authVar } from 'apollo/store';
 import RoomLog from 'components/RoomLog';
 import { IRoomLog } from 'types';
@@ -10,9 +10,9 @@ import { useChatReceived } from 'hooks/useChatReceived';
 import NavigationBar from 'components/NavigationBar';
 const CreateRoomModal = dynamic(() => import('components/CreateRoomModal'));
 
-function RoomList(props) {
+function RoomList() {
   const [isCreateModalOn, setIsCreateModalOn] = useState<boolean>(false);
-  const { data, loading, error } = useQuery(GET_ROOMS);
+  const { data, loading } = useQuery(GET_ROOMS);
   const { received, enterRoom, isSocketConnected } = useWebsocket();
   useChatReceived(received);
   const _authVar = useReactiveVar(authVar);
@@ -29,20 +29,27 @@ function RoomList(props) {
     <>
       <div className="h-screen transform divide-y-2">
         <NavigationBar title={'채팅'} />
-        {data?.rooms.map((room: IRoomLog) => (
-          <RoomLog
-            key={room.id}
-            roomStatus={room.roomStatus}
-            recentChat={room.recentChat}
-            lastViewedChat={room.lastViewedChat}
-            title={room.title}
-            location={room.location}
-            id={room.id}
-            myId={_authVar.userId}
-            receiver={room.receiver}
-            inviter={room.inviter}
-          />
-        ))}
+        {data &&
+          [...data.rooms]
+            .sort((a, b) => {
+              if (a.recentChat?.created_at < b.recentChat?.created_at) return 1;
+              if (a.recentChat?.created_at > b.recentChat?.created_at) return -1;
+              return 0;
+            })
+            .map((room: IRoomLog) => (
+              <RoomLog
+                key={room.id}
+                roomStatus={room.roomStatus}
+                recentChat={room.recentChat}
+                lastViewedChat={room.lastViewedChat}
+                title={room.title}
+                location={room.location}
+                id={room.id}
+                myId={_authVar.userId}
+                receiver={room.receiver}
+                inviter={room.inviter}
+              />
+            ))}
       </div>
       {isCreateModalOn ? (
         <CreateRoomModal type="list" setIsCreateModalOn={setIsCreateModalOn} />
