@@ -4,10 +4,9 @@ import dynamic from 'next/dynamic';
 import Input from '@material-ui/core/Input';
 import dayjs from 'dayjs';
 import { useNavermap } from 'hooks/useNavermap';
-import { CreateRoomInput, useCreateRoom } from 'apollo/mutations/createRoom';
-import { UpdateRoomInput, useUpdateRoom } from 'apollo/mutations/updateRoom';
+import { useCreateRoom } from 'apollo/mutations/createRoom';
+import { useUpdateRoom } from 'apollo/mutations/updateRoom';
 import { ICoords } from 'types';
-import { useClipboard } from 'hooks/useClipboard';
 import { toast } from 'react-toastify';
 
 const DaumPostcode = dynamic(() => import('components/DaumPostcode'));
@@ -15,7 +14,7 @@ const Skeleton = dynamic(() => import('components/Skeleton'));
 
 interface ICreateRoomModal {
   type: string;
-  id?: string;
+  room_id?: string;
   title?: string;
   reserved_time?: string;
   reserved_location?: ICoords;
@@ -30,7 +29,7 @@ interface IinputData {
 
 function CreateRoomModal({
   type,
-  id,
+  room_id,
   title,
   reserved_time,
   reserved_location,
@@ -45,13 +44,11 @@ function CreateRoomModal({
   });
   const [isDaumPostcodeOn, setIsDaumPostcodeOn] = useState<boolean>(false);
   const [address, setAddress] = useState<string>('');
-  const mapEventRef = useRef(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef(null);
   const { createRoom, createdRoom } = useCreateRoom();
-  const { updateRoom } = useUpdateRoom(id);
+  const { updateRoom } = useUpdateRoom(room_id);
   const { naver } = window;
-  const { copyToClipBoard } = useClipboard(setIsCreateModalOn);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -60,35 +57,39 @@ function CreateRoomModal({
     setInputData(newInputData);
   };
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const { title, reserved_time } = inputData;
-    const room_id = id;
     if (!title) return;
-    const queryObj =
-      type !== 'chat' ? { title, reserved_time, location } : { room_id, reserved_time, location };
-    const createOrUpdateRoomData = Object.keys(queryObj).reduce((acc, key, idx) => {
-      // if (idx !== 2) return queryObj[key] ? { ...acc, [key]: queryObj[key] } : acc;
-      if (key === 'reserved_time') queryObj[key] = new Date(queryObj[key]);
-      return queryObj[key] ? { ...acc, [key]: queryObj[key] } : acc;
-    }, {});
 
-    if (type === 'list') {
-      createRoom({
-        variables: {
-          createRoomData: createOrUpdateRoomData as CreateRoomInput,
-        },
-      });
-    }
+    const JOBS = {
+      list: () => {
+        createRoom({
+          variables: {
+            createRoomData: {
+              title,
+              reserved_time,
+              location,
+            },
+          },
+        });
+      },
+      chat: () => {
+        updateRoom({
+          variables: {
+            updateRoomData: {
+              room_id,
+              reserved_time,
+              location,
+            },
+          },
+        });
 
-    if (type === 'chat') {
-      updateRoom({
-        variables: {
-          updateRoomData: createOrUpdateRoomData as UpdateRoomInput,
-        },
-      });
-      setIsCreateModalOn(false);
-    }
+        setIsCreateModalOn(false);
+      },
+    };
+
+    JOBS[type]();
   };
 
   const handleModalClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -154,8 +155,7 @@ function CreateRoomModal({
     if (!map) return;
 
     const { naver } = window;
-    const mapListner = naver.maps.Event.addListener(map, 'click', handleMapClick);
-    mapEventRef.current = mapListner;
+    naver.maps.Event.addListener(map, 'click', handleMapClick);
   }, [map]);
 
   useEffect(() => {
@@ -191,6 +191,66 @@ function CreateRoomModal({
       },
     );
   }, []);
+
+  const handleClipboard = () => {
+    const onSucced = () => {
+      toast.info(`초대 링크가 클립보드에 복사되었습니다`, {
+        position: 'bottom-center',
+        autoClose: 2500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+      });
+
+      setIsCreateModalOn(false);
+    };
+
+    const onFailed = () => {
+      toast.warning(`초대 링크가 복사되지 않았습니다. 다시 시도해 주세요 🐇`, {
+        position: 'bottom-center',
+        autoClose: 2500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+      });
+    };
+
+    // clipboard API가 없는 브라우저 지원
+    if (!navigator.clipboard) {
+      let textarea = document.createElement('textarea');
+      textarea.readOnly = true;
+      textarea.style.position = 'fixed';
+      textarea.value = `${window.location.origin}/invitation?ROOM_ID=${
+        createdRoom?.createRoom.id || room_id
+      }`;
+      document.body.appendChild(textarea);
+
+      textarea.select();
+
+      const range = document.createRange();
+      range.selectNodeContents(textarea);
+
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+
+      textarea.setSelectionRange(0, textarea.value.length);
+      const result = document.execCommand('copy');
+      textarea.remove();
+
+      if (result) onSucced();
+      else onFailed();
+
+      return;
+    }
+
+    navigator.clipboard
+      .writeText(
+        `${window.location.origin}/invitation?ROOM_ID=${createdRoom?.createRoom.id || room_id}`,
+      )
+      .then(() => onSucced())
+      .catch(() => onFailed());
+  };
 
   return (
     <div
@@ -239,24 +299,32 @@ function CreateRoomModal({
         {!!createdRoom ? (
           <div
             className="w-4/5 py-3 m-3 text-center bg-primary rounded-md shadow-md hover:bg-primary-dark transition-colors"
-            onClick={() => copyToClipBoard(createdRoom.createRoom.id)}
+            onClick={handleClipboard}
           >
             📋 초대링크 복사하기
           </div>
         ) : (
-          <div className="flex items-center justify-around m-3 w-full">
+          <div className="flex justify-evenly m-3 w-full">
             <button
-              className="w-1/3 py-3  bg-secondary rounded-md shadow-md hover:bg-secondary-dark transition-colors"
+              className="w-5/12 py-3  bg-secondary rounded-md shadow-md hover:bg-secondary-dark transition-colors"
               onClick={() => setIsCreateModalOn(false)}
             >
               취소
             </button>
             <button
-              className="w-1/3 py-3 bg-primary rounded-md shadow-md hover:bg-primary-dark  transition-colors"
+              className="w-5/12 py-3 bg-primary rounded-md shadow-md hover:bg-primary-dark  transition-colors"
               onClick={handleSubmit}
             >
               {type === 'chat' ? '수정하기' : '생성하기'}
             </button>
+          </div>
+        )}
+        {type === 'chat' && (
+          <div
+            className="w-9/12 py-3 m-3 text-center bg-primary rounded-md shadow-md hover:bg-primary-dark transition-colors"
+            onClick={handleClipboard}
+          >
+            📋 초대링크 복사하기
           </div>
         )}
       </form>
