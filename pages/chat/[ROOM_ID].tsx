@@ -109,7 +109,7 @@ function Chat() {
       {isCreateModalOn && (
         <CreateRoomModal
           type="chat"
-          id={data?.room.id}
+          room_id={data?.room.id}
           title={data?.room.title}
           reserved_time={data?.room.reserved_time}
           reserved_location={data?.room.location}
