@@ -21,7 +21,7 @@ export interface UpdateRoomInput {
 }
 
 export const useUpdateRoom = (ROOM_ID: string) => {
-  const [updateRoom, { error, data }] = useMutation(UPDATE_ROOM, {
+  const [updateRoom, { error, data: updatedRoom }] = useMutation(UPDATE_ROOM, {
     update(cache, { data }) {
       const changed = data?.updateRoom;
 
@@ -37,6 +37,7 @@ export const useUpdateRoom = (ROOM_ID: string) => {
             ...existingRoom.room,
             reserved_time: changed.reserved_time,
             location: {
+              __typename: 'Coords',
               latitude: changed.location.latitude,
               longitude: changed.location.longitude,
             },
@@ -45,5 +46,5 @@ export const useUpdateRoom = (ROOM_ID: string) => {
       });
     },
   });
-  return { updateRoom };
+  return { updateRoom, updatedRoom };
 };
