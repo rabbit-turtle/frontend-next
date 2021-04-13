@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { useLazyQuery, useReactiveVar, useMutation, gql } from '@apollo/client';
+import { useLazyQuery, useReactiveVar } from '@apollo/client';
 import { GOOGLE_LOGIN } from 'apollo/queries';
 import { invitedRoomIdVar, authVar } from 'apollo/store';
 import { useSaveReceiver } from 'apollo/mutations/saveReceiver';
-import { useClipboard } from 'hooks/useClipboard';
 
 function Login() {
   const _invitedRoomIdVar = useReactiveVar(invitedRoomIdVar);
