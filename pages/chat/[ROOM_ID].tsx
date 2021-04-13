@@ -19,7 +19,7 @@ import { useWebsocket } from 'hooks/useWebsocket';
 import { useChatReceived } from 'hooks/useChatReceived';
 import { Send } from 'react-ionicons';
 import { ALLOWED_CHAT_TYPES } from 'constants/index';
-const CreateRoomModal = dynamic(() => import('components/CreateRoomModal'));
+const UpdateRoomModal = dynamic(() => import('components/UpdateRoomModal'));
 const ChatList = dynamic(() => import('components/ChatList'), { ssr: false });
 
 function Chat() {
@@ -107,8 +107,7 @@ function Chat() {
         </span>
       </div>
       {isCreateModalOn && (
-        <CreateRoomModal
-          type="chat"
+        <UpdateRoomModal
           room_id={data?.room.id}
           title={data?.room.title}
           reserved_time={data?.room.reserved_time}

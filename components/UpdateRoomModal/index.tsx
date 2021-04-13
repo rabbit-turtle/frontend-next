@@ -2,15 +2,20 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import Input from '@material-ui/core/Input';
+import dayjs from 'dayjs';
 import { useNavermap } from 'hooks/useNavermap';
-import { useCreateRoom } from 'apollo/mutations/createRoom';
+import { useUpdateRoom } from 'apollo/mutations/updateRoom';
 import { ICoords } from 'types';
 import { toast } from 'react-toastify';
 
 const DaumPostcode = dynamic(() => import('components/DaumPostcode'));
 const Skeleton = dynamic(() => import('components/Skeleton'));
 
-interface ICreateRoomModal {
+interface IUpdateRoomModal {
+  room_id?: string;
+  title: string;
+  reserved_time: string;
+  reserved_location: ICoords;
   setIsCreateModalOn: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -26,18 +31,24 @@ interface IMarkerInput {
   _lng: number; // x
 }
 
-function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
-  const { map, loading } = useNavermap(null);
+function UpdateRoomModal({
+  room_id,
+  title,
+  reserved_time,
+  reserved_location,
+  setIsCreateModalOn,
+}: IUpdateRoomModal) {
+  const { map, loading } = useNavermap(reserved_location || null);
   const [location, setLocation] = useState<ICoords>();
   const [inputData, setInputData] = useState<IinputData>({
-    title: '',
-    reserved_time: '',
+    title: title || '',
+    reserved_time: dayjs(reserved_time).format('YYYY-MM-DDThh:mm') || '',
   });
   const [isDaumPostcodeOn, setIsDaumPostcodeOn] = useState<boolean>(false);
   const [address, setAddress] = useState<string>('');
   const modalRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef(null);
-  const { createRoom, createdRoom } = useCreateRoom();
+  const { updateRoom } = useUpdateRoom(room_id);
   const { naver } = window;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -50,15 +61,25 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
     const { title, reserved_time } = inputData;
     if (!title || !reserved_time) return;
 
-    createRoom({
+    updateRoom({
       variables: {
-        createRoomData: {
-          title,
+        updateRoomData: {
+          room_id,
           reserved_time,
           location,
         },
       },
     });
+
+    toast.success('예약 정보가 변경되었어요', {
+      position: 'bottom-center',
+      autoClose: 2500,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+    });
+
+    setIsCreateModalOn(false);
   };
 
   const handleModalClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -114,7 +135,6 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
         position: new naver.maps.LatLng(coord._lat, coord._lng),
         map,
       });
-      return;
     }
 
     markerRef.current.setPosition(coord);
@@ -127,25 +147,28 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
     naver.maps.Event.addListener(map, 'click', handleMapClick);
   }, [map]);
 
+  //넘어온 주소 띄우기
   useEffect(() => {
-    if (!createdRoom) return;
-    if (!map) return;
+    if (!reserved_location || !map) return;
+    const { latitude, longitude } = reserved_location;
 
-    const { naver } = window;
-    naver.maps.Event.clearInstanceListeners(map);
-
-    toast.success('초대링크를 통해 채팅을 시작해 보세요', {
-      position: 'bottom-center',
-      autoClose: 2500,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: false,
-    });
-  }, [map, createdRoom]);
+    naver.maps.Service.reverseGeocode(
+      {
+        location: new naver.maps.LatLng(latitude, longitude),
+      },
+      (status: any, response: any) => {
+        if (status !== naver.maps.Service.Status.OK) {
+          return alert('Something wrong!');
+        }
+        const result = response.result;
+        const { items } = result;
+        setAddress(items[0].address);
+        setMarkerPosition({ x: longitude, y: latitude, _lat: latitude, _lng: longitude });
+      },
+    );
+  }, [reserved_location, map]);
 
   const handleClipboard = () => {
-    if (!createdRoom) return;
-
     const onSucced = () => {
       toast.info(`초대 링크가 클립보드에 복사되었어요`, {
         position: 'bottom-center',
@@ -173,7 +196,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
       let textarea = document.createElement('textarea');
       textarea.readOnly = true;
       textarea.style.position = 'fixed';
-      textarea.value = `${window.location.origin}/invitation?ROOM_ID=${createdRoom.createRoom.id}`;
+      textarea.value = `${window.location.origin}/invitation?ROOM_ID=${room_id}`;
       document.body.appendChild(textarea);
 
       textarea.select();
@@ -196,7 +219,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
     }
 
     navigator.clipboard
-      .writeText(`${window.location.origin}/invitation?ROOM_ID=${createdRoom.createRoom.id}`)
+      .writeText(`${window.location.origin}/invitation?ROOM_ID=${room_id}`)
       .then(() => onSucced())
       .catch(() => onFailed());
   };
@@ -217,8 +240,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
             placeholder="거래의 제목을 입력해주세요 🥕"
             fullWidth
             onChange={handleInputChange}
-            value={inputData.title}
-            disabled={!!createdRoom}
+            value={title ? title : inputData.title}
             name="title"
           />
           <Input
@@ -226,7 +248,6 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
             fullWidth
             onChange={handleInputChange}
             value={inputData.reserved_time}
-            disabled={!!createdRoom}
             name="reserved_time"
           />
           <Input
@@ -234,42 +255,38 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
             fullWidth
             value={address}
             placeholder="주소로 검색하기 🥕"
-            disabled={!!createdRoom}
             onClick={togglePostcodeSearch}
           />
         </div>
-        {!createdRoom && isDaumPostcodeOn && (
+        {isDaumPostcodeOn && (
           <DaumPostcode onComplete={handlePostcodeComplete} onClose={togglePostcodeSearch} />
         )}
         <div id="map" className="relative w-full h-44 bg-white">
           {loading && <Skeleton />}
         </div>
-        {!!createdRoom ? (
-          <div
-            className="w-4/5 py-3 m-3 text-center bg-primary rounded-md shadow-md hover:bg-primary-dark transition-colors"
-            onClick={handleClipboard}
+        <div className="flex justify-evenly m-3 w-full">
+          <button
+            className="w-5/12 py-3  bg-secondary rounded-md shadow-md hover:bg-secondary-dark transition-colors"
+            onClick={() => setIsCreateModalOn(false)}
           >
-            📋 초대링크 복사하기
-          </div>
-        ) : (
-          <div className="flex justify-evenly m-3 w-full">
-            <button
-              className="w-5/12 py-3  bg-secondary rounded-md shadow-md hover:bg-secondary-dark transition-colors"
-              onClick={() => setIsCreateModalOn(false)}
-            >
-              취소
-            </button>
-            <button
-              className="w-5/12 py-3 bg-primary rounded-md shadow-md hover:bg-primary-dark  transition-colors"
-              onClick={handleSubmit}
-            >
-              생성하기
-            </button>
-          </div>
-        )}
+            취소
+          </button>
+          <button
+            className="w-5/12 py-3 bg-primary rounded-md shadow-md hover:bg-primary-dark  transition-colors"
+            onClick={handleSubmit}
+          >
+            수정하기
+          </button>
+        </div>
+        <div
+          className="w-9/12 py-3 m-3 text-center bg-primary rounded-md shadow-md hover:bg-primary-dark transition-colors"
+          onClick={handleClipboard}
+        >
+          📋 초대링크 복사하기
+        </div>
       </form>
     </div>
   );
 }
 
-export default CreateRoomModal;
+export default UpdateRoomModal;
