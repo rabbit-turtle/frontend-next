@@ -29,7 +29,7 @@ function Chat() {
   const { ROOM_ID } = router.query;
   const { data } = useQuery(GET_ROOM, {
     errorPolicy: 'ignore',
-    variables: { room_id: ROOM_ID },
+    variables: { room_id: ROOM_ID, offset: 0, limit: 10 },
   });
 
   const { enterRoom, sendMessage, received, isSocketConnected } = useWebsocket();
