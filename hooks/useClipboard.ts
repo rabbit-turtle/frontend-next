@@ -10,7 +10,7 @@ type TUseClipBoard = (
   input: handleClipboardInput,
 ) => {
   handleClipboard: (e: React.MouseEvent) => void;
-  setCopyContent: (room_id: string) => void;
+  setCopyContent: (content: string) => void;
 };
 
 export const useClipboard: TUseClipBoard = ({
