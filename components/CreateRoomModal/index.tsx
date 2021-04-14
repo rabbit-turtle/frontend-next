@@ -3,6 +3,7 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import Input from '@material-ui/core/Input';
 import { useNavermap } from 'hooks/useNavermap';
+import { useClipboard } from 'hooks/useClipboard';
 import { useCreateRoom } from 'apollo/mutations/createRoom';
 import { ICoords } from 'types';
 import { toast } from 'react-toastify';
@@ -39,6 +40,28 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
   const markerRef = useRef(null);
   const { createRoom, createdRoom } = useCreateRoom();
   const { naver } = window;
+  const { handleClipboard, setCopyContent } = useClipboard({
+    defaultContent: `${window.location.origin}/invitation?ROOM_ID=`,
+    onSucceed: () => {
+      toast.info(`초대 링크가 클립보드에 복사되었어요`, {
+        position: 'bottom-center',
+        autoClose: 2500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+      });
+      setIsCreateModalOn(false);
+    },
+    onFailed: () => {
+      toast.warning(`초대 링크가 복사되지 않았습니다. 다시 시도해 주세요 🐇`, {
+        position: 'bottom-center',
+        autoClose: 2500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+      });
+    },
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -134,6 +157,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
     const { naver } = window;
     naver.maps.Event.clearInstanceListeners(map);
 
+    setCopyContent(createdRoom.createRoom.id);
     toast.success('초대링크를 통해 채팅을 시작해 보세요', {
       position: 'bottom-center',
       autoClose: 2500,
@@ -142,64 +166,6 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
       pauseOnHover: false,
     });
   }, [map, createdRoom]);
-
-  const handleClipboard = () => {
-    if (!createdRoom) return;
-
-    const onSucced = () => {
-      toast.info(`초대 링크가 클립보드에 복사되었어요`, {
-        position: 'bottom-center',
-        autoClose: 2500,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-      });
-
-      setIsCreateModalOn(false);
-    };
-
-    const onFailed = () => {
-      toast.warning(`초대 링크가 복사되지 않았습니다. 다시 시도해 주세요 🐇`, {
-        position: 'bottom-center',
-        autoClose: 2500,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-      });
-    };
-
-    // clipboard API가 없는 브라우저 지원
-    if (!navigator.clipboard) {
-      let textarea = document.createElement('textarea');
-      textarea.readOnly = true;
-      textarea.style.position = 'fixed';
-      textarea.value = `${window.location.origin}/invitation?ROOM_ID=${createdRoom.createRoom.id}`;
-      document.body.appendChild(textarea);
-
-      textarea.select();
-
-      const range = document.createRange();
-      range.selectNodeContents(textarea);
-
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-
-      textarea.setSelectionRange(0, textarea.value.length);
-      const result = document.execCommand('copy');
-      textarea.remove();
-
-      if (result) onSucced();
-      else onFailed();
-
-      return;
-    }
-
-    navigator.clipboard
-      .writeText(`${window.location.origin}/invitation?ROOM_ID=${createdRoom.createRoom.id}`)
-      .then(() => onSucced())
-      .catch(() => onFailed());
-  };
 
   return (
     <div
