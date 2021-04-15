@@ -8,7 +8,7 @@ import ProgressBar from 'components/ProgressBar';
 import { ICoords } from 'types';
 
 interface IMap {
-  loading: boolean;
+  isMapLoading: boolean;
   title: string;
   minuteLeft: number;
   currentLocation: ICoords;
@@ -16,7 +16,14 @@ interface IMap {
   distanceProgress: [number, number];
 }
 
-function Map({ loading, title, minuteLeft, currentLocation, received, distanceProgress }: IMap) {
+function Map({
+  isMapLoading,
+  title,
+  minuteLeft,
+  currentLocation,
+  received,
+  distanceProgress,
+}: IMap) {
   return (
     <div className="relative flex flex-col justify-between h-screen overflow-hidden">
       <Head>
@@ -38,7 +45,7 @@ function Map({ loading, title, minuteLeft, currentLocation, received, distancePr
       </div>
       <div className="relative flex flex-col flex-grow">
         <div id="map" className="flex-grow z-0"></div>
-        {loading && <Skeleton />}
+        {isMapLoading && <Skeleton />}
       </div>
       {currentLocation && received && (
         <div className="sticky bottom-0 bg-white z-10">

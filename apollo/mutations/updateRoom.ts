@@ -27,7 +27,7 @@ export const useUpdateRoom = (ROOM_ID: string) => {
 
       const existingRoom = cache.readQuery({
         query: GET_ROOM,
-        variables: { room_id: ROOM_ID },
+        variables: { room_id: ROOM_ID, offset: 0, limit: 10 },
       }) as { room: { chats: string[] } };
 
       cache.writeQuery({

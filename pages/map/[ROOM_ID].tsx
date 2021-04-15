@@ -24,7 +24,7 @@ function MapPage() {
   const [isBothConnected, setIsBothConnected] = useState<boolean>(false);
   const [distanceProgress, setDistanceProgress] = useState<[number, number]>([0, 100]);
   const [minuteLeft, setMinuteLeft] = useState<number>(123);
-  const { map, loading } = useNavermap();
+  const { map, isMapLoading } = useNavermap();
   const router = useRouter();
   const { enterRoom, sendMessage, isSocketConnected, received } = useWebsocket();
   const rabbitMarker = useRef(null);
@@ -210,7 +210,7 @@ function MapPage() {
 
   return (
     <Map
-      loading={loading}
+      isMapLoading={isMapLoading}
       title={data?.room?.title}
       minuteLeft={minuteLeft}
       currentLocation={currentLocation}
