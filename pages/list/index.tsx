@@ -55,7 +55,7 @@ function RoomList() {
         <CreateRoomModal setIsCreateModalOn={setIsCreateModalOn} />
       ) : (
         <button
-          className="fixed right-3 2xl:right-400 bottom-3 bg-primary w-12 h-12 rounded-50 text-white hover:bg-primary-dark focus:outline-none"
+          className="fixed right-3 md:right-52 bottom-3 bg-primary w-12 h-12 rounded-50 text-white hover:bg-primary-dark focus:outline-none"
           onClick={() => setIsCreateModalOn(prev => !prev)}
         >
           +
