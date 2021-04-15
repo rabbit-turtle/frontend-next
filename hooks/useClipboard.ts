@@ -1,13 +1,13 @@
 import React, { useRef } from 'react';
 
-interface handleClipboardInput {
+interface useClipBoardInput {
   defaultContent: string;
   onSucceed: () => void;
   onFailed: () => void;
 }
 
 type TUseClipBoard = (
-  input: handleClipboardInput,
+  input: useClipBoardInput,
 ) => {
   handleClipboard: (e: React.MouseEvent) => void;
   setCopyContent: (content: string) => void;
@@ -17,7 +17,7 @@ export const useClipboard: TUseClipBoard = ({
   onSucceed,
   onFailed,
   defaultContent,
-}: handleClipboardInput) => {
+}: useClipBoardInput) => {
   const contentRef = useRef<string>('');
   const setCopyContent = (content: string) => {
     contentRef.current = content;

@@ -1,12 +1,18 @@
-import { isNullableType } from 'graphql';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ICoords } from 'types';
 // import { useMarker } from 'hooks/useMarker';
 
+type TUseNaverMap = (
+  reserved_location?: ICoords,
+) => {
+  map: any;
+  isMapLoading: boolean;
+};
+
 //사용하실 때 <div id='map' /> 하나 지정해두시면 그 안으로 네이버지도가 쏙 들어갑니다
-export const useNavermap = (reserved_location?: ICoords) => {
+export const useNavermap: TUseNaverMap = (reserved_location?: ICoords) => {
   const [map, setMap] = useState();
-  const [loading, setLoading] = useState<boolean>(true);
+  const [isMapLoading, setLoading] = useState<boolean>(true);
   // const markerRef = useRef(null);
 
   const onGeolocationError = useCallback((error: GeolocationPositionError) => {
@@ -62,5 +68,5 @@ export const useNavermap = (reserved_location?: ICoords) => {
     );
   }, []);
 
-  return { map, loading };
+  return { map, isMapLoading };
 };

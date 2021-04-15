@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import Input from '@material-ui/core/Input';
 import { useNavermap } from 'hooks/useNavermap';
 import { useClipboard } from 'hooks/useClipboard';
+import { useMarker } from 'hooks/useMarker';
 import { useUpdateRoom } from 'apollo/mutations/updateRoom';
 import { ICoords } from 'types';
 import { toast } from 'react-toastify';
@@ -30,13 +31,6 @@ interface IinputData {
   reserved_time: string | Date;
 }
 
-interface IMarkerInput {
-  x: number;
-  y: number;
-  _lat: number; // y
-  _lng: number; // x
-}
-
 function UpdateRoomModal({
   room_id,
   title,
@@ -44,7 +38,7 @@ function UpdateRoomModal({
   reserved_location,
   setIsCreateModalOn,
 }: IUpdateRoomModal) {
-  const { map, loading } = useNavermap(reserved_location || null);
+  const { map, isMapLoading } = useNavermap(reserved_location || null);
   const [location, setLocation] = useState<ICoords>();
   const [inputData, setInputData] = useState<IinputData>({
     title: title || '',
@@ -53,7 +47,6 @@ function UpdateRoomModal({
   const [isDaumPostcodeOn, setIsDaumPostcodeOn] = useState<boolean>(false);
   const [address, setAddress] = useState<string>('');
   const modalRef = useRef<HTMLDivElement>(null);
-  const markerRef = useRef(null);
   const { updateRoom } = useUpdateRoom(room_id);
   const { naver } = window;
   const { handleClipboard, setCopyContent } = useClipboard({
@@ -78,6 +71,7 @@ function UpdateRoomModal({
       });
     },
   });
+  const { handleMapClick, setMarkerPosition } = useMarker({ map, setAddress, setLocation });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -142,35 +136,6 @@ function UpdateRoomModal({
     },
     [map],
   );
-
-  const handleMapClick = useCallback(
-    (e: any) => {
-      const { _lat: latitude, _lng: longitude } = e.coord;
-      setLocation({ latitude, longitude });
-      setMarkerPosition(e.coord);
-      naver.maps.Service.reverseGeocode(
-        {
-          coords: e.coord,
-        },
-        (status: any, response: any) => {
-          if (status === naver.maps.Service.Status.ERROR) return console.log(status);
-          setAddress(response.v2.address.jibunAddress);
-        },
-      );
-    },
-    [map],
-  );
-
-  const setMarkerPosition = (coord: IMarkerInput) => {
-    if (!markerRef.current) {
-      markerRef.current = new naver.maps.Marker({
-        position: new naver.maps.LatLng(coord._lat, coord._lng),
-        map,
-      });
-    }
-
-    markerRef.current.setPosition(coord);
-  };
 
   useEffect(() => {
     if (!map) return;
@@ -243,7 +208,7 @@ function UpdateRoomModal({
           <DaumPostcode onComplete={handlePostcodeComplete} onClose={togglePostcodeSearch} />
         )}
         <div id="map" className="relative w-full h-44 bg-white">
-          {loading && <Skeleton />}
+          {isMapLoading && <Skeleton />}
         </div>
         <div className="flex justify-evenly m-3 w-full">
           <button
