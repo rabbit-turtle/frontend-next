@@ -29,32 +29,51 @@ export const useCreateChat = (ROOM_ID: string) => {
     update(cache, { data }) {
       const newChatFromResponse = data?.createChat;
 
-      const existingChats = cache.readQuery({
-        query: GET_CHATS,
-        variables: { room_id: ROOM_ID },
-      }) as { chats: any[] };
+      const existingRoom = cache.readQuery({
+        query: GET_ROOM,
+        variables: { room_id: ROOM_ID, offset: 0, limit: 10 },
+      }) as { room: { chats: any[] } };
+
+      // console.log('existingRoom', existingRoom, ROOM_ID);
 
       cache.writeQuery({
-        query: GET_CHATS,
+        query: GET_ROOM,
         data: {
-          chats: [...existingChats.chats, newChatFromResponse],
+          room: {
+            ...existingRoom.room,
+            recentChat: newChatFromResponse,
+            chats: [...existingRoom.room.chats, newChatFromResponse],
+          },
         },
-        variables: {
-          room_id: ROOM_ID,
-        },
+        variables: { room_id: ROOM_ID, offset: 0, limit: 10 },
       });
 
-      cache.writeFragment({
-        id: `Room:${ROOM_ID}`,
-        fragment: gql`
-          fragment RecentChat on Room {
-            recentChat
-          }
-        `,
-        data: {
-          recentChat: newChatFromResponse,
-        },
-      });
+      // const existingChats = cache.readQuery({
+      //   query: GET_CHATS,
+      //   variables: { room_id: ROOM_ID },
+      // }) as { chats: any[] };
+
+      // cache.writeQuery({
+      //   query: GET_CHATS,
+      //   data: {
+      //     chats: [...existingChats.chats, newChatFromResponse],
+      //   },
+      //   variables: {
+      //     room_id: ROOM_ID,
+      //   },
+      // });
+
+      // cache.writeFragment({
+      //   id: `Room:${ROOM_ID}`,
+      //   fragment: gql`
+      //     fragment RecentChat on Room {
+      //       recentChat
+      //     }
+      //   `,
+      //   data: {
+      //     recentChat: newChatFromResponse,
+      //   },
+      // });
     },
   });
 

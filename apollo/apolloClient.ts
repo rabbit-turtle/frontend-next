@@ -32,15 +32,23 @@ const createApolloClient = () => {
       typePolicies: {
         Query: {
           fields: {
-            chats: {
-              keyArgs: ['room_id'],
-              merge(existing = [], incoming, { args }) {
-                if (!args.offset) {
-                  return [...incoming];
-                }
-                return [...incoming, ...existing];
-              },
-            },
+            // chats: {
+            //   keyArgs: ['room_id'],
+            //   merge(existing = [], incoming, { args }) {
+            //     console.log(existing, incoming);
+            //     if (!args.offset) {
+            //       return [...incoming];
+            //     }
+            //     return [...incoming, ...existing];
+            //   },
+            // },
+            // room: {
+            //   keyArgs: ['room_id'],
+            //   merge(existing, incoming, { readField }) {
+            //     console.log('existing', existing?.chats, 'incoming', incoming?.chats);
+            //     return { ...incoming };
+            //   },
+            // },
           },
         },
       },

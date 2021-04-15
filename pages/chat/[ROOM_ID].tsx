@@ -20,7 +20,7 @@ import { useChatReceived } from 'hooks/useChatReceived';
 import { Send } from 'react-ionicons';
 import { ALLOWED_CHAT_TYPES } from 'constants/index';
 const UpdateRoomModal = dynamic(() => import('components/UpdateRoomModal'));
-const ChatList = dynamic(() => import('components/ChatList'), { ssr: false });
+const ChatList = dynamic(() => import('components/ChatList'));
 
 function Chat() {
   const [value, setValue] = useState<string>('');
@@ -31,6 +31,7 @@ function Chat() {
     errorPolicy: 'ignore',
     variables: { room_id: ROOM_ID, offset: 0, limit: 10 },
   });
+  const [isChatAdded, setIsChatAdded] = useState<boolean>(false);
 
   const { enterRoom, sendMessage, received, isSocketConnected } = useWebsocket();
   useChatReceived(received);
@@ -44,10 +45,15 @@ function Chat() {
     enterRoom(ROOM_ID as string);
   }, [ROOM_ID, isSocketConnected]);
 
+  useEffect(() => {
+    setIsChatAdded(true);
+  }, [received]);
+
   const handleSubmit = (): void => {
     if (!value || !ROOM_ID) return;
     const id = uuidv4();
     const created_at = new Date();
+    setIsChatAdded(true);
     sendMessage({
       id,
       ROOM_ID: ROOM_ID as string,
@@ -90,7 +96,11 @@ function Chat() {
         />
         <MapNavigationBar title={data?.room.title} reserved_time={data?.room.reserved_time} />
       </div>
-      <ChatList />
+      <ChatList
+        chats={data?.room.chats}
+        isChatAdded={isChatAdded}
+        setIsChatAdded={setIsChatAdded}
+      />
       <div />
       <div className="fixed bottom-0 w-full sm:w-448 py-1 flex items-center justify-between bg-gray-100 border-t border-gray-300">
         <MessageInput
@@ -124,7 +134,7 @@ export default Chat;
 const MessageInput = styled.input`
   margin: 5px 0 5px 5px;
   width: 85%;
-  height: 35px;
+  height: 32px;
   outline: none;
   border-radius: 40px;
   text-indent: 15px;
