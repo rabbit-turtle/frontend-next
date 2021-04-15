@@ -2,12 +2,17 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import Input from '@material-ui/core/Input';
-import dayjs from 'dayjs';
 import { useNavermap } from 'hooks/useNavermap';
 import { useClipboard } from 'hooks/useClipboard';
 import { useUpdateRoom } from 'apollo/mutations/updateRoom';
 import { ICoords } from 'types';
 import { toast } from 'react-toastify';
+import CalendarTemplate from 'components/CreateRoomModal/CalendarTemplate';
+
+import DatePicker, { registerLocale } from 'react-datepicker';
+import ko from 'date-fns/locale/ko';
+registerLocale('ko', ko);
+import 'react-datepicker/dist/react-datepicker.css';
 
 const DaumPostcode = dynamic(() => import('components/DaumPostcode'));
 const Skeleton = dynamic(() => import('components/Skeleton'));
@@ -43,7 +48,7 @@ function UpdateRoomModal({
   const [location, setLocation] = useState<ICoords>();
   const [inputData, setInputData] = useState<IinputData>({
     title: title || '',
-    reserved_time: dayjs(reserved_time).format('YYYY-MM-DDThh:mm') || '',
+    reserved_time: new Date(reserved_time),
   });
   const [isDaumPostcodeOn, setIsDaumPostcodeOn] = useState<boolean>(false);
   const [address, setAddress] = useState<string>('');
@@ -77,6 +82,10 @@ function UpdateRoomModal({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setInputData({ ...inputData, [name]: value });
+  };
+
+  const handleDateChange = date => {
+    setInputData({ ...inputData, reserved_time: date });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -211,13 +220,17 @@ function UpdateRoomModal({
             value={title ? title : inputData.title}
             name="title"
           />
-          <Input
-            type="datetime-local"
-            fullWidth
-            onChange={handleInputChange}
-            value={inputData.reserved_time}
-            name="reserved_time"
-          />
+          <CalendarTemplate>
+            <DatePicker
+              selected={inputData.reserved_time}
+              onChange={date => handleDateChange(date)}
+              locale="ko"
+              showTimeSelect
+              timeFormat="p"
+              timeIntervals={10}
+              dateFormat="Pp"
+            />
+          </CalendarTemplate>
           <Input
             type="text"
             fullWidth
