@@ -11,7 +11,7 @@ import {
 import { throttle } from 'lodash';
 import styled from 'styled-components';
 
-const limit = 10;
+const limit = 20;
 
 interface IChat {
   id?: string;
@@ -35,7 +35,7 @@ function ChatList({ chats, isChatAdded, setIsChatAdded }: IChatList) {
     variables: {
       room_id: ROOM_ID,
       offset: 0,
-      limit,
+      limit: 20,
     },
     onCompleted: data => {
       listRef.current.scrollTo({ top: 2000 }); // 맨 처음 들어왔을 때 맨 아래로 스크롤 내림
@@ -51,7 +51,7 @@ function ChatList({ chats, isChatAdded, setIsChatAdded }: IChatList) {
       }
       const existingRoom = client.readQuery({
         query: GET_ROOM,
-        variables: { room_id: ROOM_ID, offset: 0, limit: 10 },
+        variables: { room_id: ROOM_ID, offset: 0, limit: 20 },
       }) as { room: { chats: any[] } };
 
       if (existingRoom.room.chats[0].id === data.chats[0].id) return;
@@ -64,7 +64,7 @@ function ChatList({ chats, isChatAdded, setIsChatAdded }: IChatList) {
             chats: [...data.chats, ...existingRoom.room.chats],
           },
         },
-        variables: { room_id: ROOM_ID, offset: 0, limit: 10 },
+        variables: { room_id: ROOM_ID, offset: 0, limit: 20 },
       });
     },
   });

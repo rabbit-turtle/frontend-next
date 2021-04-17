@@ -31,7 +31,7 @@ export const useCreateChat = (ROOM_ID: string) => {
 
       const existingRoom = cache.readQuery({
         query: GET_ROOM,
-        variables: { room_id: ROOM_ID, offset: 0, limit: 10 },
+        variables: { room_id: ROOM_ID, offset: 0, limit: 20 },
       }) as { room: { chats: any[] } };
 
       // console.log('existingRoom', existingRoom, ROOM_ID);
@@ -45,7 +45,7 @@ export const useCreateChat = (ROOM_ID: string) => {
             chats: [...existingRoom.room.chats, newChatFromResponse],
           },
         },
-        variables: { room_id: ROOM_ID, offset: 0, limit: 10 },
+        variables: { room_id: ROOM_ID, offset: 0, limit: 20 },
       });
 
       // const existingChats = cache.readQuery({

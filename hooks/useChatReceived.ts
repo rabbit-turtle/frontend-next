@@ -24,13 +24,13 @@ export const useChatReceived = (received: string) => {
 
     const existingRoom = apolloClient.readQuery({
       query: GET_ROOM,
-      variables: { room_id: ROOM_ID, offset: 0, limit: 10 },
+      variables: { room_id: ROOM_ID, offset: 0, limit: 20 },
     });
 
     if (existingRoom) {
       apolloClient.writeQuery({
         query: GET_ROOM,
-        variables: { room_id: ROOM_ID, offset: 0, limit: 10 },
+        variables: { room_id: ROOM_ID, offset: 0, limit: 20 },
         data: {
           room: {
             ...existingRoom.room,

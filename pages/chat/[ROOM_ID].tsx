@@ -29,7 +29,7 @@ function Chat() {
   const { ROOM_ID } = router.query;
   const { data } = useQuery(GET_ROOM, {
     errorPolicy: 'ignore',
-    variables: { room_id: ROOM_ID, offset: 0, limit: 10 },
+    variables: { room_id: ROOM_ID, offset: 0, limit: 20 },
   });
   const [isChatAdded, setIsChatAdded] = useState<boolean>(false);
 
