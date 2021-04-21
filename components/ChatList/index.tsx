@@ -1,91 +1,146 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useMemo, memo } from 'react';
 import { useRouter } from 'next/router';
-import { useQuery } from '@apollo/client';
+import { useQuery, useApolloClient, useLazyQuery, gql } from '@apollo/client';
 import dayjs from 'dayjs';
-import { GET_CHATS } from 'apollo/queries';
+import { GET_CHATS, GET_ROOM, GET_ROOMS } from 'apollo/queries';
 import Chatlog from 'components/ChatLog';
 import {
   useSaveLastViewedChat,
   SaveLastViewedChatInput,
 } from 'apollo/mutations/saveLastViewedChat';
+import { throttle } from 'lodash';
 import styled from 'styled-components';
 
-const limit = 10;
+const limit = 20;
 
-function ChatList() {
+interface IChat {
+  id?: string;
+  content?: string;
+  created_at?: string;
+  room_id?: string;
+  isSender?: boolean;
+  chat_type_id?: string;
+}
+
+interface IChatList {
+  chats?: IChat[];
+  isChatAdded: boolean;
+  setIsChatAdded: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+function ChatList({ chats, isChatAdded, setIsChatAdded }: IChatList) {
   const router = useRouter();
-  const { data: chats, fetchMore } = useQuery(GET_CHATS, {
+  const { ROOM_ID } = router.query;
+  const {} = useQuery(GET_ROOM, {
     variables: {
-      room_id: router.query.ROOM_ID,
-      limit,
+      room_id: ROOM_ID,
       offset: 0,
+      limit: 20,
     },
-    onError: console.log,
     onCompleted: data => {
-      offsetRef.current = data.chats.length;
-      chatEndRef.current?.scrollIntoView();
+      listRef.current.scrollTo({ top: 2000 }); // 맨 처음 들어왔을 때 맨 아래로 스크롤 내림
     },
   });
-  const chatEndRef = useRef<HTMLDivElement>(null);
-  const offsetRef = useRef<number>(0);
-  const firstChatRef = useRef<HTMLSpanElement>(null);
-  const lastChatIdRef = useRef<String>(null);
-  const { saveLastViewedChat } = useSaveLastViewedChat(router.query.ROOM_ID as string);
 
-  const observerRef = useRef<IntersectionObserver>(
-    new IntersectionObserver(
-      async (entries, observer) => {
-        if (entries[0].isIntersecting) {
-          console.log('intersect', entries[0]);
-          await fetchMore({
-            variables: { room_id: router.query.ROOM_ID, offset: offsetRef.current, limit },
-          });
-          chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-          observer.unobserve(entries[0].target);
-          if (entries[0].target.id !== firstChatRef.current.id)
-            observer.observe(firstChatRef.current);
-        }
-      },
-      { threshold: 0.2 },
-    ),
-  );
+  const [paginate, { client }] = useLazyQuery(GET_CHATS, {
+    fetchPolicy: 'network-only',
+    onCompleted: data => {
+      if (!data.chats.length) {
+        observerRef.current.disconnect();
+        return;
+      }
+      const existingRoom = client.readQuery({
+        query: GET_ROOM,
+        variables: { room_id: ROOM_ID, offset: 0, limit: 20 },
+      }) as { room: { chats: any[] } };
+
+      if (existingRoom.room.chats[0].id === data.chats[0].id) return;
+
+      client.writeQuery({
+        query: GET_ROOM,
+        data: {
+          room: {
+            ...existingRoom.room,
+            chats: [...data.chats, ...existingRoom.room.chats],
+          },
+        },
+        variables: { room_id: ROOM_ID, offset: 0, limit: 20 },
+      });
+    },
+  });
+
+  const chatTopRef = useRef<HTMLDivElement>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const offsetRef = useRef<number>(chats?.length || 0);
+  const firstChatRef = useRef<HTMLSpanElement>(null);
+  const prevFirstChatIdRef = useRef<String>('');
+  const listRef = useRef<HTMLDivElement>(null);
+  const prevScrollHeightMinusTopRef = useRef<number>(0);
+  const lastChatIdRef = useRef<String>(null);
+  const { saveLastViewedChat } = useSaveLastViewedChat(ROOM_ID as string);
+  const observerRef = useRef<IntersectionObserver>(null);
 
   useEffect(() => {
     return () => {
-      observerRef.current?.disconnect();
+      console.log('save lastviewed', lastChatIdRef.current);
       saveLastViewedChat({
         variables: {
           saveLastViewedChatData: {
-            room_id: router.query.ROOM_ID,
+            room_id: ROOM_ID,
             chat_id: lastChatIdRef.current,
-          } as SaveLastViewedChatInput,
+          },
         },
       });
     };
   }, []);
 
   useEffect(() => {
-    if (!chats || chats.chats.length <= 0) return;
-    if (lastChatIdRef.current !== chats?.chats[chats.chats.length - 1].id) {
-      // 새로운 채팅이 추가된경우
-      observerRef.current.observe(firstChatRef.current);
-      lastChatIdRef.current && chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (!listRef.current) return;
+
+    const intersectionObserver = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) {
+          const { scrollHeight, scrollTop } = listRef.current;
+          prevScrollHeightMinusTopRef.current = scrollHeight - scrollTop;
+          paginate({
+            variables: {
+              room_id: ROOM_ID,
+              limit,
+              offset: offsetRef.current,
+            },
+          });
+        }
+      },
+      {
+        threshold: 1,
+      },
+    );
+    intersectionObserver.observe(chatTopRef.current);
+    observerRef.current = intersectionObserver;
+  }, [listRef]);
+
+  useEffect(() => {
+    if (!chats?.length) return;
+    offsetRef.current = chats?.length || 0;
+
+    lastChatIdRef.current = chats[chats.length - 1].id;
+
+    if (isChatAdded) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      setIsChatAdded(false);
+      return;
     }
-    offsetRef.current = chats?.chats.length;
-    lastChatIdRef.current = chats?.chats[chats?.chats.length - 1].id;
+    listRef.current.scrollTop = listRef.current.scrollHeight - prevScrollHeightMinusTopRef.current;
+    prevFirstChatIdRef.current = chats[0].id;
+    return;
   }, [chats]);
 
   return (
     <>
-      <div className="flex-grow pb-14 bg-gray-100 overflow-auto">
-        {chats?.chats.map((chat, idx: number, arr: any[]) => (
+      <div ref={listRef} className="flex-grow bg-gray-100 overflow-auto mb-12">
+        <div ref={chatTopRef} />
+        {chats?.map((chat, idx: number, arr: IChat[]) => (
           <span key={chat.id}>
-            {idx < arr.length - 1 &&
-              dayjs(arr[idx].created_at).date() !== dayjs(arr[idx + 1].created_at).date() && (
-                <div className="text-center text-gray-500 text-xs">
-                  {dayjs(arr[idx + 1].created_at).format('YYYY년 M월 D일')}
-                </div>
-              )}
             <span id={`chat${chat.id}`} ref={idx === 0 ? firstChatRef : null}>
               <Chatlog
                 isSender={chat.isSender}
@@ -93,6 +148,12 @@ function ChatList() {
                 created_at={dayjs(chat.created_at).format('h:mm A')}
               />
             </span>
+            {idx < arr.length - 1 &&
+              dayjs(arr[idx].created_at).date() !== dayjs(arr[idx + 1].created_at).date() && (
+                <div className="text-center text-gray-500 text-xs">
+                  {dayjs(arr[idx + 1].created_at).format('YYYY년 M월 D일')}
+                </div>
+              )}
           </span>
         ))}
         <div ref={chatEndRef} />
@@ -102,24 +163,4 @@ function ChatList() {
   );
 }
 
-export default ChatList;
-
-const MessageInput = styled.input`
-  margin: 5px 0 5px 5px;
-  width: 85%;
-  height: 35px;
-  outline: none;
-  border-radius: 40px;
-  text-indent: 15px;
-  font-size: 16px;
-  border: 1px solid rgba(131, 124, 124, 0.4);
-  background-color: white;
-
-  ::placeholder {
-    font-size: 16px;
-  }
-
-  &:focus {
-    border: 1px solid #ef9a9a;
-  }
-`;
+export default memo(ChatList);
