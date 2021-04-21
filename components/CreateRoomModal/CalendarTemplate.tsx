@@ -51,4 +51,28 @@ const CalendarWrapper = styled.div`
       }
     }
   }
+  @media (max-width: 375px) {
+    .react-datepicker {
+      width: 240px;
+      display: flex;
+    }
+    .react-datepicker-popper {
+      transform: translate3d(0px, 180px, 0px) !important;
+    }
+    .react-datepicker__navigation--next--with-time {
+      right: 0;
+    }
+    .react-datepicker__time-container {
+      width: 57px;
+      .react-datepicker__time-box {
+        width: 57px !important;
+      }
+      .react-datepicker__time-list {
+        width: 57px !important;
+        li {
+          padding: 2px;
+        }
+      }
+    }
+  }
 `;
