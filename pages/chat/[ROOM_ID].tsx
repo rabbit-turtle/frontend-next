@@ -5,13 +5,8 @@ import { useRouter } from 'next/router';
 import { authVar } from 'apollo/store';
 import { GET_ROOM, GET_CHATS } from 'apollo/queries';
 import { useCreateChat, CreateChatInput } from 'apollo/mutations/createChat';
-import {
-  useSaveLastViewedChat,
-  SaveLastViewedChatInput,
-} from 'apollo/mutations/saveLastViewedChat';
-import { useLazyQuery, useReactiveVar, useQuery } from '@apollo/client';
+import { useReactiveVar, useQuery } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
-import dayjs from 'dayjs';
 import styled, { css } from 'styled-components';
 import NavigationBar from 'components/NavigationBar';
 import MapNavigationBar from 'components/MapNavigationBar';
@@ -82,7 +77,7 @@ function Chat() {
   return (
     <div className="relative flex flex-col h-screen">
       <Head>
-        <title>채팅</title>
+        <title>{data?.room?.title || '채팅'}</title>
       </Head>
       <div className="sticky top-0 z-10 bg-white">
         <NavigationBar

@@ -4,13 +4,14 @@ import Head from 'next/head';
 import { ApolloProvider } from '@apollo/client';
 import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
+import { ToastContainer } from 'react-toastify';
 import Template from 'components/template';
 import AuthProvider from 'components/AuthProvider';
+import ErrorBoundary from 'components/ErrorBoundary';
 import theme from 'styles/theme';
 import { useApollo } from 'apollo/apolloClient';
 import 'styles/tailwind.css';
 import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer } from 'react-toastify';
 
 declare global {
   interface Window {
@@ -34,6 +35,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     <>
       <Template>
         <Head>
+          <meta charSet="utf-8" />
           <script src="https://apis.google.com/js/platform.js" async defer></script>
           <link
             rel="stylesheet"
@@ -47,15 +49,17 @@ function MyApp({ Component, pageProps }: AppProps) {
           <script src="https://developers.kakao.com/sdk/js/kakao.js" defer></script>
           <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
         </Head>
-        <ApolloProvider client={apolloClient}>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <AuthProvider>
-              <Component {...pageProps} />
-            </AuthProvider>
-            <ToastContainer newestOnTop />
-          </ThemeProvider>
-        </ApolloProvider>
+        <ErrorBoundary>
+          <ApolloProvider client={apolloClient}>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <AuthProvider>
+                <Component {...pageProps} />
+              </AuthProvider>
+              <ToastContainer newestOnTop />
+            </ThemeProvider>
+          </ApolloProvider>
+        </ErrorBoundary>
       </Template>
     </>
   );
