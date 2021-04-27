@@ -17,6 +17,8 @@ import { ALLOWED_CHAT_TYPES } from 'constants/index';
 const UpdateRoomModal = dynamic(() => import('components/UpdateRoomModal'));
 const ChatList = dynamic(() => import('components/ChatList'));
 
+let vh;
+
 function Chat() {
   const [value, setValue] = useState<string>('');
   const [isCreateModalOn, setIsCreateModalOn] = useState<boolean>(false);
@@ -44,6 +46,12 @@ function Chat() {
     // console.log('received', received);
     setIsChatAdded(true);
   }, [received]);
+
+  useEffect(() => {
+    vh = window.innerHeight * 0.01;
+
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }, []);
 
   const handleSubmit = (): void => {
     if (!value || !ROOM_ID) return;
@@ -79,11 +87,12 @@ function Chat() {
   };
 
   return (
-    <div className="relative flex flex-col h-screen overflow-hidden">
+    <>
       <Head>
         <title>{data?.room?.title || '채팅'}</title>
       </Head>
-      <div className="sticky top-0 z-10 bg-white">
+      {/* <div className="relative flex flex-col h-screen overflow-y-hidden"> */}
+      <Container>
         <NavigationBar
           title={
             data?.room?.inviter?.id !== _authVar?.userId
@@ -92,43 +101,53 @@ function Chat() {
           }
           receiver={data?.room.receiver}
           setIsCreateModalOn={setIsCreateModalOn}
-        />
-        <MapNavigationBar title={data?.room.title} reserved_time={data?.room.reserved_time} />
-      </div>
-      <ChatList
-        chats={data?.room.chats}
-        isChatAdded={isChatAdded}
-        setIsChatAdded={setIsChatAdded}
-      />
-      <div />
-      <div className="fixed bottom-0 w-full sm:w-448 py-1 flex items-center justify-between bg-gray-100 border-t border-gray-300">
-        <MessageInput
-          placeholder="채팅해 보세요🥕"
-          onChange={handleChange}
-          value={value}
-          onKeyPress={(e: React.KeyboardEvent) => e.key === 'Enter' && handleSubmit()}
-        />
-        <span
-          className={`absolute right-2 cursor-pointer ${value ? 'opacity-100' : 'opacity-40'}`}
-          onClick={handleSubmit}
+          sticky={false}
         >
-          <Send color={'#ef9a9a'} height="25px" width="25px" />
-        </span>
-      </div>
-      {isCreateModalOn && (
-        <UpdateRoomModal
-          room_id={data?.room.id}
-          title={data?.room.title}
-          reserved_time={data?.room.reserved_time}
-          reserved_location={data?.room.location}
-          setIsCreateModalOn={setIsCreateModalOn}
+          <MapNavigationBar title={data?.room.title} reserved_time={data?.room.reserved_time} />
+        </NavigationBar>
+        <ChatList
+          chats={data?.room.chats}
+          isChatAdded={isChatAdded}
+          setIsChatAdded={setIsChatAdded}
         />
-      )}
-    </div>
+        <div className="fixed bottom-0 w-full sm:w-448 py-1 flex items-center justify-between bg-gray-100 border-t border-gray-300">
+          <MessageInput
+            placeholder="채팅해 보세요🥕"
+            onChange={handleChange}
+            value={value}
+            onKeyPress={(e: React.KeyboardEvent) => e.key === 'Enter' && handleSubmit()}
+          />
+          <span
+            className={`absolute right-2 cursor-pointer ${value ? 'opacity-100' : 'opacity-40'}`}
+            onClick={handleSubmit}
+          >
+            <Send color={'#ef9a9a'} height="25px" width="25px" />
+          </span>
+          {isCreateModalOn && (
+            <UpdateRoomModal
+              room_id={data?.room.id}
+              title={data?.room.title}
+              reserved_time={data?.room.reserved_time}
+              reserved_location={data?.room.location}
+              setIsCreateModalOn={setIsCreateModalOn}
+            />
+          )}
+        </div>
+      </Container>
+      {/* </div> */}
+    </>
   );
 }
 
 export default Chat;
+
+const Container = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+`;
 
 const MessageInput = styled.input`
   margin: 5px 0 5px 5px;

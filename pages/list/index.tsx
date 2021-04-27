@@ -31,8 +31,8 @@ function RoomList() {
       <Head>
         <title>토끼와거북이</title>
       </Head>
-      <div className="h-screen transform divide-y-2">
-        <NavigationBar title={'채팅'} />
+      <NavigationBar title={'채팅'} />
+      <div className="h-screen transform divide-y-2 overflow-scroll">
         {data &&
           [...data.rooms]
             .sort((a, b) => {

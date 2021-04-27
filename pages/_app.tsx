@@ -29,6 +29,9 @@ function MyApp({ Component, pageProps }: AppProps) {
     if (jssStyles) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
+
+    const mydoc = document.documentElement;
+    mydoc.style.height = `${window.innerHeight}px`;
   }, []);
 
   return (

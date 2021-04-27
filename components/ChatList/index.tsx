@@ -77,8 +77,8 @@ function ChatList({ chats, isChatAdded, setIsChatAdded }: IChatList) {
         query: GET_ROOM,
         data: {
           room: {
-            ...existingRoom.room,
-            chats: [...data.chats, ...existingRoom.room.chats],
+            ...existingRoom?.room,
+            chats: [...data.chats, ...existingRoom?.room.chats],
           },
         },
         variables: { room_id: ROOM_ID, offset: 0, limit },
@@ -153,30 +153,27 @@ function ChatList({ chats, isChatAdded, setIsChatAdded }: IChatList) {
   }, [chats]);
 
   return (
-    <>
-      <div ref={listRef} className="flex-grow bg-gray-100 overflow-scroll mb-12">
-        <div ref={chatTopRef} />
-        {chats?.map((chat, idx: number, arr: IChat[]) => (
-          <span key={chat.id}>
-            <span id={`chat${chat.id}`} ref={idx === 0 ? firstChatRef : null}>
-              <Chatlog
-                isSender={chat.isSender}
-                content={chat.content}
-                created_at={dayjs(chat.created_at).format('h:mm A')}
-              />
-            </span>
-            {idx < arr.length - 1 &&
-              dayjs(arr[idx].created_at).date() !== dayjs(arr[idx + 1].created_at).date() && (
-                <div className="text-center text-gray-500 text-xs">
-                  {dayjs(arr[idx + 1].created_at).format('YYYY년 M월 D일')}
-                </div>
-              )}
+    <div ref={listRef} className="flex-grow overflow-y-scroll mb-12 bg-gray-100">
+      <div ref={chatTopRef} />
+      {chats?.map((chat, idx: number, arr: IChat[]) => (
+        <span key={chat.id}>
+          <span id={`chat${chat.id}`} ref={idx === 0 ? firstChatRef : null}>
+            <Chatlog
+              isSender={chat.isSender}
+              content={chat.content}
+              created_at={dayjs(chat.created_at).format('h:mm A')}
+            />
           </span>
-        ))}
-        <div ref={chatEndRef} />
-      </div>
-      <div />
-    </>
+          {idx < arr.length - 1 &&
+            dayjs(arr[idx].created_at).date() !== dayjs(arr[idx + 1].created_at).date() && (
+              <div className="text-center text-gray-500 text-xs">
+                {dayjs(arr[idx + 1].created_at).format('YYYY년 M월 D일')}
+              </div>
+            )}
+        </span>
+      ))}
+      <div ref={chatEndRef} />
+    </div>
   );
 }
 
