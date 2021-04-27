@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import { invitedRoomIdVar, authVar } from 'apollo/store';
 import { useSaveReceiver } from 'apollo/mutations/saveReceiver';
 import Skeleton from 'components/Skeleton';
@@ -33,12 +34,17 @@ function Invitation({ isLogined }: { isLogined: boolean }) {
       </div>
     );
   return (
-    <main className="px-6">
-      <NavigationBar title="" />
-      <div className="relative h-full">
-        <Skeleton />
-      </div>
-    </main>
+    <>
+      <Head>
+        <title>토끼와 거북이</title>
+      </Head>
+      <main className="px-6">
+        <NavigationBar title="" />
+        <div className="relative h-full">
+          <Skeleton />
+        </div>
+      </main>
+    </>
   );
 }
 

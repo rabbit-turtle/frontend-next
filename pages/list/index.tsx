@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import Head from 'next/head';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { GET_ROOMS } from 'apollo/queries';
 import { authVar } from 'apollo/store';
@@ -27,6 +28,9 @@ function RoomList() {
 
   return (
     <>
+      <Head>
+        <title>토끼와거북이</title>
+      </Head>
       <div className="h-screen transform divide-y-2">
         <NavigationBar title={'채팅'} />
         {data &&

@@ -1,25 +1,26 @@
-import React, { useCallback, useEffect, useRef, useMemo, memo } from 'react';
+import React, { useEffect, useRef, memo } from 'react';
 import { useRouter } from 'next/router';
-import { useQuery, useApolloClient, useLazyQuery, gql } from '@apollo/client';
+import { useQuery, useLazyQuery, gql } from '@apollo/client';
 import dayjs from 'dayjs';
-import { GET_CHATS, GET_ROOM, GET_ROOMS } from 'apollo/queries';
+import { GET_ROOM } from 'apollo/queries';
 import Chatlog from 'components/ChatLog';
 import {
   useSaveLastViewedChat,
   SaveLastViewedChatInput,
 } from 'apollo/mutations/saveLastViewedChat';
-import { throttle } from 'lodash';
-import styled from 'styled-components';
 
 const limit = 20;
 
 interface IChat {
-  id?: string;
-  content?: string;
-  created_at?: string;
-  room_id?: string;
-  isSender?: boolean;
-  chat_type_id?: string;
+  id: string;
+  content: string;
+  created_at: string;
+  room_id: string;
+  isSender: boolean;
+  chat_type_id: string;
+  sender: {
+    id: string;
+  };
 }
 
 interface IChatList {
@@ -28,6 +29,22 @@ interface IChatList {
   setIsChatAdded: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+const GET_CHATS = gql`
+  query GETCHAT($room_id: String!, $offset: Int, $limit: Int) {
+    chats(room_id: $room_id, offset: $offset, limit: $limit) {
+      id
+      isSender
+      content
+      created_at
+      room_id
+      chat_type_id
+      sender {
+        id
+      }
+    }
+  }
+`;
+
 function ChatList({ chats, isChatAdded, setIsChatAdded }: IChatList) {
   const router = useRouter();
   const { ROOM_ID } = router.query;
@@ -35,10 +52,10 @@ function ChatList({ chats, isChatAdded, setIsChatAdded }: IChatList) {
     variables: {
       room_id: ROOM_ID,
       offset: 0,
-      limit: 20,
+      limit,
     },
     onCompleted: data => {
-      listRef.current.scrollTo({ top: 2000 }); // 맨 처음 들어왔을 때 맨 아래로 스크롤 내림
+      listRef.current.scrollTo({ top: 3000 }); // 맨 처음 들어왔을 때 맨 아래로 스크롤 내림
     },
   });
 
@@ -51,10 +68,10 @@ function ChatList({ chats, isChatAdded, setIsChatAdded }: IChatList) {
       }
       const existingRoom = client.readQuery({
         query: GET_ROOM,
-        variables: { room_id: ROOM_ID, offset: 0, limit: 20 },
-      }) as { room: { chats: any[] } };
+        variables: { room_id: ROOM_ID, offset: 0, limit },
+      }) as { room: { chats: IChat[] } };
 
-      if (existingRoom.room.chats[0].id === data.chats[0].id) return;
+      if (existingRoom?.room.chats[0].id === data.chats[0].id) return;
 
       client.writeQuery({
         query: GET_ROOM,
@@ -64,7 +81,7 @@ function ChatList({ chats, isChatAdded, setIsChatAdded }: IChatList) {
             chats: [...data.chats, ...existingRoom.room.chats],
           },
         },
-        variables: { room_id: ROOM_ID, offset: 0, limit: 20 },
+        variables: { room_id: ROOM_ID, offset: 0, limit },
       });
     },
   });
@@ -88,7 +105,7 @@ function ChatList({ chats, isChatAdded, setIsChatAdded }: IChatList) {
           saveLastViewedChatData: {
             room_id: ROOM_ID,
             chat_id: lastChatIdRef.current,
-          },
+          } as SaveLastViewedChatInput,
         },
       });
     };
@@ -137,7 +154,7 @@ function ChatList({ chats, isChatAdded, setIsChatAdded }: IChatList) {
 
   return (
     <>
-      <div ref={listRef} className="flex-grow bg-gray-100 overflow-auto mb-12">
+      <div ref={listRef} className="flex-grow bg-gray-100 overflow-scroll mb-12">
         <div ref={chatTopRef} />
         {chats?.map((chat, idx: number, arr: IChat[]) => (
           <span key={chat.id}>

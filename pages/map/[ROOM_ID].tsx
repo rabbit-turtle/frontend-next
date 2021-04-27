@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import Head from 'next/head';
 import { useLazyQuery } from '@apollo/client';
 import { useNavermap } from 'hooks/useNavermap';
 import { useWebsocket } from 'hooks/useWebsocket';
@@ -209,14 +210,19 @@ function MapPage() {
   }, [currentLocation, received, isBothConnected]);
 
   return (
-    <Map
-      isMapLoading={isMapLoading}
-      title={data?.room?.title}
-      minuteLeft={minuteLeft}
-      currentLocation={currentLocation}
-      received={received}
-      distanceProgress={distanceProgress}
-    />
+    <>
+      <Head>
+        <title>{data?.room?.title || '지도'}</title>
+      </Head>
+      <Map
+        isMapLoading={isMapLoading}
+        title={data?.room?.title}
+        minuteLeft={minuteLeft}
+        currentLocation={currentLocation}
+        received={received}
+        distanceProgress={distanceProgress}
+      />
+    </>
     // <div>에효</div>
   );
 }
