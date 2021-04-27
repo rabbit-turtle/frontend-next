@@ -41,6 +41,7 @@ function Chat() {
   }, [ROOM_ID, isSocketConnected]);
 
   useEffect(() => {
+    // console.log('received', received);
     setIsChatAdded(true);
   }, [received]);
 
@@ -49,6 +50,9 @@ function Chat() {
     const id = uuidv4();
     const created_at = new Date();
     setIsChatAdded(true);
+
+    // console.log('newchat', { id, message: value, created_at });
+
     sendMessage({
       id,
       ROOM_ID: ROOM_ID as string,
@@ -75,7 +79,7 @@ function Chat() {
   };
 
   return (
-    <div className="relative flex flex-col h-screen">
+    <div className="relative flex flex-col h-screen overflow-hidden">
       <Head>
         <title>{data?.room?.title || '채팅'}</title>
       </Head>

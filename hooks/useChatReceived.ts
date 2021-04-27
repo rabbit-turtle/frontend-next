@@ -27,6 +27,12 @@ export const useChatReceived = (received: string) => {
       variables: { room_id: ROOM_ID, offset: 0, limit: 20 },
     });
 
+    // console.log('newchatfromsocket', newChatFromSocket);
+    const newChats = [
+      ...existingRoom.room.chats.filter(chat => chat.id !== newChatFromSocket.id),
+      newChatFromSocket,
+    ];
+
     if (existingRoom) {
       apolloClient.writeQuery({
         query: GET_ROOM,
@@ -35,6 +41,7 @@ export const useChatReceived = (received: string) => {
           room: {
             ...existingRoom.room,
             recentChat: newChatFromSocket,
+            chats: newChats,
           },
         },
       });
