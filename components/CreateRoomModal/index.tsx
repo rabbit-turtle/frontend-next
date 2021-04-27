@@ -9,6 +9,7 @@ import { useCreateRoom } from 'apollo/mutations/createRoom';
 import { ICoords } from 'types';
 import { toast } from 'react-toastify';
 import CalendarTemplate from './CalendarTemplate';
+import { isNotEmpty, isDate, isAfter, validate, isLocation } from 'utils/validator';
 
 import DatePicker, { registerLocale } from 'react-datepicker';
 import ko from 'date-fns/locale/ko';
@@ -75,7 +76,24 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const { title, reserved_time } = inputData;
-    if (!title || !reserved_time) return;
+    if (!title || !reserved_time || !location) {
+      const errors = validate(
+        {
+          title,
+          reserved_time,
+          location,
+        },
+        {
+          title: isNotEmpty,
+          reserved_time: [isNotEmpty, isDate, isAfter],
+          location: [isNotEmpty, isLocation],
+        },
+      );
+
+      console.log(errors);
+
+      return;
+    }
 
     createRoom({
       variables: {
@@ -100,6 +118,8 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
 
   const handlePostcodeComplete = useCallback(
     (_address: string) => {
+      if (!map) return;
+
       const mapSetCenter = (_map: any, x: number, y: number) => _map.panTo({ x, y });
       setAddress(_address);
       setIsDaumPostcodeOn(false);
