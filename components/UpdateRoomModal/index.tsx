@@ -8,8 +8,8 @@ import { useMarker } from 'hooks/useMarker';
 import { useUpdateRoom } from 'apollo/mutations/updateRoom';
 import { ICoords } from 'types';
 import { toast } from 'react-toastify';
+import { isNotEmpty, isDate, isAfter, isLocation, validate } from 'utils/validator';
 import CalendarTemplate from 'components/CreateRoomModal/CalendarTemplate';
-
 import DatePicker, { registerLocale } from 'react-datepicker';
 import ko from 'date-fns/locale/ko';
 registerLocale('ko', ko);
@@ -39,7 +39,10 @@ function UpdateRoomModal({
   setIsCreateModalOn,
 }: IUpdateRoomModal) {
   const { map, isMapLoading } = useNavermap(reserved_location || null);
-  const [location, setLocation] = useState<ICoords>();
+  const [location, setLocation] = useState<ICoords>({
+    longitude: reserved_location.longitude,
+    latitude: reserved_location.latitude,
+  });
   const [inputData, setInputData] = useState<IinputData>({
     title: title || '',
     reserved_time: new Date(reserved_time),
@@ -84,8 +87,32 @@ function UpdateRoomModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const { title, reserved_time } = inputData;
-    if (!title || !reserved_time) return;
+    const { reserved_time } = inputData;
+    const errors = validate(
+      {
+        reserved_time,
+        location,
+      },
+      {
+        reserved_time: [isNotEmpty, isDate, isAfter],
+        location: [isNotEmpty, isLocation],
+      },
+    );
+
+    if (errors.length) {
+      console.log(location);
+      console.log(errors);
+      errors.reverse().forEach(({ errorMessage }) =>
+        toast.error(errorMessage, {
+          position: 'bottom-center',
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+        }),
+      );
+      return;
+    }
 
     updateRoom({
       variables: {

@@ -78,7 +78,7 @@ function ChatList({ chats, isChatAdded, setIsChatAdded }: IChatList) {
         data: {
           room: {
             ...existingRoom?.room,
-            chats: [...data.chats, ...existingRoom?.room.chats],
+            chats: [...data.chats, ...(existingRoom.room.chats || [])],
           },
         },
         variables: { room_id: ROOM_ID, offset: 0, limit },
@@ -93,7 +93,7 @@ function ChatList({ chats, isChatAdded, setIsChatAdded }: IChatList) {
   const prevFirstChatIdRef = useRef<String>('');
   const listRef = useRef<HTMLDivElement>(null);
   const prevScrollHeightMinusTopRef = useRef<number>(0);
-  const lastChatIdRef = useRef<String>(null);
+  const lastChatIdRef = useRef<String>('');
   const { saveLastViewedChat } = useSaveLastViewedChat(ROOM_ID as string);
   const observerRef = useRef<IntersectionObserver>(null);
 
