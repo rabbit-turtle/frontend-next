@@ -63,7 +63,7 @@ function NavigationBar({ title, receiver, setIsCreateModalOn, children, sticky =
 
   return (
     <>
-      <nav className={`${sticky && 'sticky top-0'} bg-white z-100`}>
+      <nav className={`${sticky && 'sticky top-0'} bg-white z-20`}>
         <div className="relative flex items-center justify-between py-3 px-7">
           <div className="cursor-pointer w-4">
             {router.pathname !== '/list' && (
