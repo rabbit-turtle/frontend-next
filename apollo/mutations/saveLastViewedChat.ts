@@ -1,5 +1,4 @@
 import { gql, useMutation } from '@apollo/client';
-import { useEffect } from 'react';
 
 export const SAVE_LAST_VIEWED_CHAT = gql`
   mutation SaveLastViewedChat($saveLastViewedChatData: SaveLastViewedChatInput!) {

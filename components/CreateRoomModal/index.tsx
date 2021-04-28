@@ -10,6 +10,7 @@ import { ICoords } from 'types';
 import { toast } from 'react-toastify';
 import CalendarTemplate from './CalendarTemplate';
 import { isNotEmpty, isDate, isAfter, validate, isLocation } from 'utils/validator';
+import dayjs from 'dayjs';
 
 import DatePicker, { registerLocale } from 'react-datepicker';
 import ko from 'date-fns/locale/ko';
@@ -33,7 +34,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
   const [location, setLocation] = useState<ICoords>();
   const [inputData, setInputData] = useState<IinputData>({
     title: '',
-    reserved_time: new Date(),
+    reserved_time: new Date(dayjs().add(2, 'hour').startOf('hour').toISOString()),
   });
   const [isDaumPostcodeOn, setIsDaumPostcodeOn] = useState<boolean>(false);
   const [address, setAddress] = useState<string>('');
@@ -76,22 +77,29 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const { title, reserved_time } = inputData;
-    if (!title || !reserved_time || !location) {
-      const errors = validate(
-        {
-          title,
-          reserved_time,
-          location,
-        },
-        {
-          title: isNotEmpty,
-          reserved_time: [isNotEmpty, isDate, isAfter],
-          location: [isNotEmpty, isLocation],
-        },
+    const errors = validate(
+      {
+        title,
+        reserved_time,
+        location,
+      },
+      {
+        title: [isNotEmpty],
+        reserved_time: [isNotEmpty, isDate, isAfter],
+        location: [isNotEmpty, isLocation],
+      },
+    );
+
+    if (errors.length) {
+      errors.reverse().forEach(({ errorMessage }) =>
+        toast.error(errorMessage, {
+          position: 'bottom-center',
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+        }),
       );
-
-      console.log(errors);
-
       return;
     }
 
