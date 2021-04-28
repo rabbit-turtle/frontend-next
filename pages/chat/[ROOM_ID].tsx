@@ -123,18 +123,18 @@ function Chat() {
           >
             <Send color={'#ef9a9a'} height="25px" width="25px" />
           </span>
-          {isCreateModalOn && (
-            <UpdateRoomModal
-              room_id={data?.room.id}
-              title={data?.room.title}
-              reserved_time={data?.room.reserved_time}
-              reserved_location={data?.room.location}
-              setIsCreateModalOn={setIsCreateModalOn}
-            />
-          )}
         </div>
       </Container>
       {/* </div> */}
+      {isCreateModalOn && (
+        <UpdateRoomModal
+          room_id={data?.room.id}
+          title={data?.room.title}
+          reserved_time={data?.room.reserved_time}
+          reserved_location={data?.room.location}
+          setIsCreateModalOn={setIsCreateModalOn}
+        />
+      )}
     </>
   );
 }
