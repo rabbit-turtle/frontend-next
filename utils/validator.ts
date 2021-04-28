@@ -19,6 +19,11 @@ export const isLocation = (v: any) =>
   v.hasOwnProperty('latitude') &&
   isFloat(v['latitude']);
 
+// const errorMessages = {
+//   isNotEmpty: ''
+
+// }
+
 export const validate = <T extends {}>(
   values: T,
   rules: Record<keyof T, Function | Function[]>,
