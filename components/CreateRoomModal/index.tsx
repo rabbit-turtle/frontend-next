@@ -2,23 +2,18 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import Input from '@material-ui/core/Input';
+import dayjs from 'dayjs';
 import { useNavermap } from 'hooks/useNavermap';
 import { useClipboard } from 'hooks/useClipboard';
 import { useMarker } from 'hooks/useMarker';
 import { useCreateRoom } from 'apollo/mutations/createRoom';
 import { ICoords } from 'types';
 import { toast } from 'react-toastify';
-import CalendarTemplate from './CalendarTemplate';
 import { isNotEmpty, isDate, isAfter, validate, isLocation } from 'utils/validator';
-import dayjs from 'dayjs';
-
-import DatePicker, { registerLocale } from 'react-datepicker';
-import ko from 'date-fns/locale/ko';
-registerLocale('ko', ko);
-import 'react-datepicker/dist/react-datepicker.css';
 
 const DaumPostcode = dynamic(() => import('components/DaumPostcode'));
 const Skeleton = dynamic(() => import('components/Skeleton'));
+const Calendar = dynamic(() => import('components/Calendar'));
 
 interface ICreateRoomModal {
   setIsCreateModalOn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -37,6 +32,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
     reserved_time: new Date(dayjs().add(2, 'hour').startOf('hour').toISOString()),
   });
   const [isDaumPostcodeOn, setIsDaumPostcodeOn] = useState<boolean>(false);
+  const [isCalendarOn, setIsCalendarOn] = useState<boolean>(false);
   const [address, setAddress] = useState<string>('');
   const modalRef = useRef<HTMLDivElement>(null);
   const { createRoom, createdRoom } = useCreateRoom();
@@ -72,6 +68,7 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
 
   const handleDateChange = date => {
     setInputData({ ...inputData, reserved_time: date });
+    setIsCalendarOn(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -189,18 +186,12 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
             disabled={!!createdRoom}
             name="title"
           />
-          <CalendarTemplate>
-            <DatePicker
-              selected={inputData.reserved_time}
-              onChange={date => handleDateChange(date)}
-              locale="ko"
-              showTimeSelect
-              timeFormat="p"
-              timeIntervals={10}
-              dateFormat="Pp"
-              disabled={!!createdRoom}
-            />
-          </CalendarTemplate>
+          <div
+            className="flex items-center h-8 w-full text-base"
+            onClick={() => setIsCalendarOn(true)}
+          >
+            {dayjs(inputData.reserved_time).format('YYYY. MM. DD hh:mm A')}
+          </div>
           <Input
             type="text"
             fullWidth
@@ -238,6 +229,13 @@ function CreateRoomModal({ setIsCreateModalOn }: ICreateRoomModal) {
               생성하기
             </button>
           </div>
+        )}
+        {!createdRoom && isCalendarOn && (
+          <Calendar
+            setIsCalendarOn={setIsCalendarOn}
+            handleDateChange={handleDateChange}
+            reservedDate={inputData.reserved_time}
+          />
         )}
       </form>
     </div>

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import Input from '@material-ui/core/Input';
+import dayjs from 'dayjs';
 import { useNavermap } from 'hooks/useNavermap';
 import { useClipboard } from 'hooks/useClipboard';
 import { useMarker } from 'hooks/useMarker';
@@ -9,14 +10,10 @@ import { useUpdateRoom } from 'apollo/mutations/updateRoom';
 import { ICoords } from 'types';
 import { toast } from 'react-toastify';
 import { isNotEmpty, isDate, isAfter, isLocation, validate } from 'utils/validator';
-import CalendarTemplate from 'components/CreateRoomModal/CalendarTemplate';
-import DatePicker, { registerLocale } from 'react-datepicker';
-import ko from 'date-fns/locale/ko';
-registerLocale('ko', ko);
-import 'react-datepicker/dist/react-datepicker.css';
 
 const DaumPostcode = dynamic(() => import('components/DaumPostcode'));
 const Skeleton = dynamic(() => import('components/Skeleton'));
+const Calendar = dynamic(() => import('components/Calendar'));
 
 interface IUpdateRoomModal {
   room_id?: string;
@@ -48,6 +45,7 @@ function UpdateRoomModal({
     reserved_time: new Date(reserved_time),
   });
   const [isDaumPostcodeOn, setIsDaumPostcodeOn] = useState<boolean>(false);
+  const [isCalendarOn, setIsCalendarOn] = useState<boolean>(false);
   const [address, setAddress] = useState<string>('');
   const modalRef = useRef<HTMLDivElement>(null);
   const { updateRoom } = useUpdateRoom(room_id);
@@ -83,6 +81,7 @@ function UpdateRoomModal({
 
   const handleDateChange = date => {
     setInputData({ ...inputData, reserved_time: date });
+    setIsCalendarOn(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -212,17 +211,12 @@ function UpdateRoomModal({
             value={title ? title : inputData.title}
             name="title"
           />
-          <CalendarTemplate>
-            <DatePicker
-              selected={inputData.reserved_time}
-              onChange={date => handleDateChange(date)}
-              locale="ko"
-              showTimeSelect
-              timeFormat="p"
-              timeIntervals={10}
-              dateFormat="Pp"
-            />
-          </CalendarTemplate>
+          <div
+            className="flex items-center h-8 w-full text-base"
+            onClick={() => setIsCalendarOn(true)}
+          >
+            {dayjs(inputData.reserved_time).format('YYYY. MM. DD hh:mm A')}
+          </div>
           <Input
             type="text"
             fullWidth
@@ -257,6 +251,13 @@ function UpdateRoomModal({
         >
           📋 초대링크 복사하기
         </div>
+        {isCalendarOn && (
+          <Calendar
+            reservedDate={inputData.reserved_time}
+            handleDateChange={handleDateChange}
+            setIsCalendarOn={setIsCalendarOn}
+          />
+        )}
       </form>
     </div>
   );
