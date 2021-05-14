@@ -11,14 +11,14 @@ export interface sendMessageInput {
   created_at: Date;
 }
 
-interface UserWebsocketResult {
+interface UseWebsocketResult {
   enterRoom: (ROOM_ID: string) => void;
   sendMessage: (sendMessageData: sendMessageInput) => void;
   isSocketConnected: boolean;
   received: string;
 }
 
-export const useWebsocket = (): UserWebsocketResult => {
+export const useWebsocket = (): UseWebsocketResult => {
   const [received, setReceived] = useState<string>('');
   const socket = useReactiveVar(currentSocketVar);
   const isSocketConnected = useReactiveVar(isSocketConnectedVar);
